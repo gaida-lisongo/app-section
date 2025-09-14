@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect } from "react";
-import featuresData from "./featuresData";
 import SingleFeature from "./SingleFeature";
 import SectionHeader from "../Common/SectionHeader";
 import { useSectionStore } from "@/store";
