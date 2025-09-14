@@ -13,11 +13,21 @@ import Contact from "@/components/Contact";
 import Blog from "@/components/Blog";
 import Activities from "@/components/Activity";
 
-export const metadata: Metadata = {
-  title: "Next.js Starter Template for SaaS Startups - Solid SaaS Boilerplate",
 
-  // other metadata
-  description: "This is Home for Solid Pro"
+export const metadata: Metadata = {
+  title: "Section Académique",
+  description: "Institut de formation académique et professionnelle",
+  keywords: ["institut", "formation", "académique", "éducation"],
+  openGraph: {
+    title: "Institut | Section Académique",
+    description: "Institut de formation académique et professionnelle",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Institut | Section Académique",
+    description: "Institut de formation académique et professionnelle",
+  },
 };
 
 export default function Page() {
