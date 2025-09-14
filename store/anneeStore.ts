@@ -87,14 +87,8 @@ export const useAnneeStore = create<AnneeState>((set, get) => ({
       const annees = await HomeService.fetchAnnees();
       
       if (annees) {
-        const currentYear = new Date().getFullYear();
-        const currentAnnee = annees.find(a => currentYear >= a.debut && currentYear <= a.fin);
-        
-        if (currentAnnee) {
-          set({ currentAnnee, loading: false });
-        } else {
-          set({ error: 'Aucune année courante trouvée', loading: false });
-        }
+        const currentAnnee = annees[annees.length - 1] || null;
+        set({ currentAnnee, loading: false });
       } else {
         set({ error: 'Erreur lors du chargement de l\'année courante', loading: false });
       }

@@ -60,7 +60,16 @@ export interface Annee {
         photo: string;
         description: string;
     }
-    articles: any[];
+    articles: {
+      author: string;
+      sectionId: string;
+      title: string;
+      content: string;
+      image: string;
+      date: Date | string;
+      _id: string;
+      tags: string[];
+    }[];
     createdAt: string;
     updatedAt: string;
     __v: number;

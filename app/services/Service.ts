@@ -31,10 +31,8 @@ class Service implements Service {
     async fetchAnnees() : Promise<Annee[] | null> {
         try {
             const res = await fetch(`${config.base_url}/annee`);
-            const data: Response = await res.json();
-            if (data.success) {
-                return data.data as Annee[];
-            }
+            const data: Annee[] = await res.json();
+            return data;
         } catch (error) {
             console.error("Error fetching annees:", error);
             return null;
