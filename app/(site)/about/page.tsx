@@ -20,14 +20,17 @@ export const metadata: Metadata = {
   description: "This is Home for Solid Pro"
 };
 
-export default function Home() {
+export default function Page() {
   return (
     <main>
-      <Hero />
-      <FunFact />
-      <Feature />
-      <FeaturesTab />
-      <Activities />
+      <CTA />
+      <About />
+      <Integration />
+      <Brands />
+      <FAQ />
+      <Pricing />
+      <Contact />
+      <Blog />
     </main>
   );
 }

@@ -29,7 +29,17 @@ export interface Section {
       titre: string;
       description: string;
     }[];
-    calendrier: any[];
+    calendrier: {
+      _id?: number;
+      current: boolean;
+      annee: string;
+      activities: {
+        _id?: number;
+        titre: string;
+        date_activity: string;
+        description: string;
+      }[]
+    }[];
     alumni: any[];
     galery: any[];
     agenda: any[];

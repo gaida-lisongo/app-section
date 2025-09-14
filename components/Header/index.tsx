@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 
 import ThemeToggler from "./ThemeToggler";
 import menuData from "./menuData";
+import { useSectionStore } from "@/store";
 
 const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [dropdownToggler, setDropdownToggler] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
-
+  const { section } = useSectionStore();
   const pathUrl = usePathname();
 
   // Sticky menu
@@ -35,24 +36,31 @@ const Header = () => {
           : ""
       }`}
     >
+      {section && (
       <div className="relative mx-auto max-w-c-1390 items-center justify-between px-4 md:px-8 xl:flex 2xl:px-0">
         <div className="flex w-full items-center justify-between xl:w-1/4">
-          <a href="/">
-            <Image
-              src="/images/logo/logo-dark.svg"
-              alt="logo"
-              width={119.03}
-              height={30}
-              className="hidden w-full dark:block"
-            />
-            <Image
-              src="/images/logo/logo-light.svg"
-              alt="logo"
-              width={119.03}
-              height={30}
-              className="w-full dark:hidden"
-            />
-          </a>
+                    <Link href="/" className="flex items-center space-x-3">
+            {/* Icône de la section - arrondie et compacte */}
+            <div className="flex-shrink-0">
+              <Image
+                src={section?.description.images ? section.description.images[0] : "/images/logo/logo-dark.svg"}
+                alt="logo section"
+                width={64}
+                height={64}
+                className="rounded-full object-cover ring-2 ring-blue-100"
+              />
+            </div>
+            
+            {/* Texte du logo - Sigle et Désignation */}
+            <div className="flex flex-col">
+              <span className="text-3xl font-bold text-primary dark:text-white">
+                {section?.description.sigle || "INBTP"}
+              </span>
+              <span className="text-base text-gray-600 dark:text-gray-300 leading-tight">
+                {section?.description.designation || "Institut National"}
+              </span>
+            </div>
+          </Link>
 
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
@@ -152,24 +160,38 @@ const Header = () => {
           </nav>
 
           <div className="mt-7 flex items-center gap-6 xl:mt-0">
-            <ThemeToggler />
+            {/* <ThemeToggler /> */}
 
-            <Link
+            {/* <Link
               href="https://github.com/NextJSTemplates/solid-nextjs"
               className="text-regular font-medium text-waterloo hover:text-primary"
             >
-              GitHub Repo 🌟
-            </Link>
+              &GitHub Repo 🌟
+            </Link> */}
 
             <Link
-              href="https://nextjstemplates.com/templates/solid"
+              href="/student"
               className="flex items-center justify-center rounded-full bg-primary px-7.5 py-2.5 text-regular text-white duration-300 ease-in-out hover:bg-primaryho"
             >
-              Get Pro 🔥
+                <svg
+                className="mr-2 h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                </svg>
+              Espace Etudiant
             </Link>
           </div>
         </div>
       </div>
+      )}
     </header>
   );
 };

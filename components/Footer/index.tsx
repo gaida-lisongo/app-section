@@ -1,8 +1,10 @@
 "use client";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useSectionStore } from "@/store";
 
 const Footer = () => {
+  const { section } = useSectionStore();
   return (
     <>
       <footer className="border-t border-stroke bg-white dark:border-strokedark dark:bg-blacksection">
@@ -28,25 +30,22 @@ const Footer = () => {
                 viewport={{ once: true }}
                 className="animate_top w-1/2 lg:w-1/4"
               >
-                <a href="/" className="relative">
-                  <Image
-                    width={110}
-                    height={80}
-                    src="/images/logo/logo-light.svg"
-                    alt="Logo"
-                    className="dark:hidden"
-                  />
-                  <Image
-                    width={110}
-                    height={80}
-                    src="/images/logo/logo-dark.svg"
-                    alt="Logo"
-                    className="hidden dark:block"
-                  />
-                </a>
+                <div className="flex flex-col items-center mb-5">
+                  {/* Icône de la section - centrée */}
+                  <div className="mb-3">
+                    <Image
+                      src={section?.description.images ? section.description.images[0] : "/images/logo/logo-dark.svg"}
+                      alt="logo section"
+                      width={64}
+                      height={64}
+                      className="rounded-full object-cover ring-2 ring-blue-100"
+                    />
+                  </div>
+                  
+                </div>
 
-                <p className="mb-10 mt-5">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                <p className="mb-10 text-gray-600 dark:text-gray-300 text-center">
+                  {section?.description.designation || "Institut National de Bâtiment et Travaux Publics"}
                 </p>
 
                 <p className="mb-1.5 text-sectiontitle uppercase tracking-[5px]">
@@ -56,7 +55,7 @@ const Footer = () => {
                   href="#"
                   className="text-itemtitle font-medium text-black dark:text-white"
                 >
-                  hello@solid.com
+                  {section?.contact.email || "contact@inbtp.net"}
                 </a>
               </motion.div>
 
@@ -80,40 +79,40 @@ const Footer = () => {
                   className="animate_top"
                 >
                   <h4 className="mb-9 text-itemtitle2 font-medium text-black dark:text-white">
-                    Quick Links
+                    Liens rapides
                   </h4>
 
                   <ul>
                     <li>
                       <a
-                        href="#"
+                        href="/courses"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Home
+                        Cours
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/seances"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Product
+                        Séances
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/travaux"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Careers
+                        Travaux Pratiques
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/enseignants"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Pricing
+                        Enseignants
                       </a>
                     </li>
                   </ul>
@@ -138,40 +137,40 @@ const Footer = () => {
                   className="animate_top"
                 >
                   <h4 className="mb-9 text-itemtitle2 font-medium text-black dark:text-white">
-                    Support
+                    Services
                   </h4>
 
                   <ul>
                     <li>
                       <a
-                        href="#"
+                        href="https://section.inbtp.net"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Company
+                        Direction
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="https://academique.inbtp.net"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Press media
+                        Académique
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="https://administratif.inbtp.net"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Our Blog
+                        Administratif
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="https://apparitorat.inbtp.net"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Contact Us
+                        Apparitorat
                       </a>
                     </li>
                   </ul>
@@ -196,17 +195,17 @@ const Footer = () => {
                   className="animate_top"
                 >
                   <h4 className="mb-9 text-itemtitle2 font-medium text-black dark:text-white">
-                    Newsletter
+                    Checking
                   </h4>
                   <p className="mb-4 w-[90%]">
-                    Subscribe to receive future updates
+                    Verifier l'autheticité des documents émis par notre section.
                   </p>
 
                   <form action="#">
                     <div className="relative">
                       <input
                         type="text"
-                        placeholder="Email address"
+                        placeholder="Numéro de Reference"
                         className="w-full rounded-full border border-stroke px-6 py-3 shadow-solid-11 focus:border-primary focus:outline-hidden dark:border-strokedark dark:bg-black dark:shadow-none dark:focus:border-primary"
                       />
 
@@ -265,17 +264,7 @@ const Footer = () => {
             >
               <ul className="flex items-center gap-8">
                 <li>
-                  <a href="#" className="hover:text-primary">
-                    English
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary">
+                  <a href="/contact" className="hover:text-primary">
                     Support
                   </a>
                 </li>
@@ -301,11 +290,11 @@ const Footer = () => {
               className="animate_top"
             >
               <p>
-                &copy; {new Date().getFullYear()} Solid. All rights reserved
+                &copy; {new Date().getFullYear()} Solid & ELMES. All rights reserved
               </p>
             </motion.div>
 
-            <motion.div
+            {/* <motion.div
               variants={{
                 hidden: {
                   opacity: 0,
@@ -417,7 +406,7 @@ const Footer = () => {
                   </a>
                 </li>
               </ul>
-            </motion.div>
+            </motion.div> */}
           </div>
           {/* <!-- Footer Bottom --> */}
         </div>
