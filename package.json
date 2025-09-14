@@ -9,13 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/pdfmake": "^0.2.11",
+    "@types/qrcode": "^1.5.5",
+    "@vercel/blob": "^1.1.1",
     "framer-motion": "^12.0.6",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
     "next": "15.1.6",
     "next-themes": "^0.2.1",
+    "pdf-lib": "^1.17.1",
+    "pdfmake": "^0.2.20",
+    "qrcode": "^1.5.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hot-toast": "^2.4.1",
-    "swiper": "^9.3.2"
+    "swiper": "^9.3.2",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.3",

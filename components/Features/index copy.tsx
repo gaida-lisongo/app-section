@@ -1,17 +1,10 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import featuresData from "./featuresData";
 import SingleFeature from "./SingleFeature";
 import SectionHeader from "../Common/SectionHeader";
-import { useSectionStore } from "@/store";
 
 const Feature = () => {
-  const { section, loading } = useSectionStore();
-
-  if (!section || loading) {
-    return null; // Ou un loader si nécessaire
-  }
-
   return (
     <>
       {/* <!-- ===== Features Start ===== --> */}
@@ -20,22 +13,21 @@ const Feature = () => {
           {/* <!-- Section Title Start --> */}
           <SectionHeader
             headerInfo={{
-              title: section?.description.designation || "Section",
-              subtitle: "Nos offres de formation",
-              description: `De la formation initiale aux spécialisations avancées, nous vous accompagnons dans votre parcours académique avec des méthodes pédagogiques innovantes et un encadrement personnalisé.`,
+              title: "SOLID FEATURES",
+              subtitle: "Core Features of Solid",
+              description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
+            convallis tortor eros. Donec vitae tortor lacus. Phasellus aliquam
+            ante in maximus.`,
             }}
           />
           {/* <!-- Section Title End --> */}
 
           <div className="mt-12.5 grid grid-cols-1 gap-7.5 md:grid-cols-2 lg:mt-15 lg:grid-cols-3 xl:mt-20 xl:gap-12.5">
             {/* <!-- Features item Start --> */}
-            {section.offres.map((feature, key) => (
-              <SingleFeature feature={{ ...feature, _id: feature._id ?? key }} key={key} />
-            ))}
 
-            {/* {featuresData.map((feature, key) => (
+            {featuresData.map((feature, key) => (
               <SingleFeature feature={feature} key={key} />
-            ))} */}
+            ))}
             {/* <!-- Features item End --> */}
           </div>
         </div>

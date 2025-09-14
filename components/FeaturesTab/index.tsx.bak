@@ -8,12 +8,9 @@ import { ModalResultat } from "../Common/ModalResultat";
 
 const FeaturesTab = () => {
   const {
-    currentStep,
     formData,
     isSubmitting,
     error,
-    etudiant,
-    setCurrentStep,
     updateFormData,
     submitInscription,
     setError,

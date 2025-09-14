@@ -1,6 +1,6 @@
 export type Feature = {
-  id: number;
+  _id: number;
   icon: string;
-  title: string;
+  titre: string;
   description: string;
 };

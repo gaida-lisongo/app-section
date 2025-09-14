@@ -1,0 +1,46 @@
+import config from "./config.json";
+import { Response, Section, Annee } from "../../types/section";
+
+interface Service {
+    fetchSection(): Promise<Section | null>;
+    fetchAnnees(): Promise<Annee[] | null>;
+}
+
+class Service implements Service {
+    private _id: string;
+
+    constructor() {
+        this._id = config._id;
+    }
+
+    async fetchSection() : Promise<Section | null> {
+        try {
+            const res = await fetch(`${config.base_url}/section/${this._id}`);
+            const data: Response = await res.json();
+            if (data.success) {
+                return data.data as Section;
+            }
+        } catch (error) {
+            console.error("Error fetching section:", error);
+            return null;
+        }
+        
+        return null;
+    }
+
+    async fetchAnnees() : Promise<Annee[] | null> {
+        try {
+            const res = await fetch(`${config.base_url}/annee`);
+            const data: Response = await res.json();
+            if (data.success) {
+                return data.data as Annee[];
+            }
+        } catch (error) {
+            console.error("Error fetching annees:", error);
+            return null;
+        }
+        return null;
+    }
+}
+
+export default Service;
