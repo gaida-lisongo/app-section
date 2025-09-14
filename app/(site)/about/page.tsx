@@ -25,12 +25,12 @@ export default function Page() {
     <main>
       <CTA />
       <About />
-      <Integration />
+      {/* <Integration />
       <Brands />
       <FAQ />
       <Pricing />
       <Contact />
-      <Blog />
+      <Blog /> */}
     </main>
   );
 }

@@ -48,7 +48,17 @@ export interface Section {
       _id: string;
     }[];
     galery: any[];
-    agenda: any[];
+    agenda: {
+      _id?: string;
+      annee: string;
+      current: boolean;
+      events: {
+        _id?: string;
+        titre: string;
+        date_event: Date | string;
+        description: string;
+      }[]
+    }[];
     missions: {
       _id?: string;
       titre: string;
