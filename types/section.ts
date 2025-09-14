@@ -40,12 +40,28 @@ export interface Section {
         description: string;
       }[]
     }[];
-    alumni: any[];
+    alumni: {
+      description: string;
+      nom: string;
+      photo: string;
+      titre: string;
+      _id: string;
+    }[];
     galery: any[];
     agenda: any[];
-    missions: any[];
+    missions: {
+      _id?: string;
+      titre: string;
+      description: string;
+    }[];
     history: any[];
-    team: any[];
+    team: {
+        photo: string;
+        nom: string;
+        grade: string;
+        fonction: "Chef de Section" | "Chargé de l'Enseignement" | "Chargé de la Recherche";
+        _id: string;
+    }[];
     valeurs: any[];
     createdAt: string;
     updatedAt: string;
