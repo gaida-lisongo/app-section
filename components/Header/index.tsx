@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import ThemeToggler from "./ThemeToggler";
 import menuData from "./menuData";
 import { useSectionStore } from "@/store";
+import PanierIcon from "@/components/Panier/PanierIcon";
 
 const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
@@ -168,6 +169,9 @@ const Header = () => {
             >
               &GitHub Repo 🌟
             </Link> */}
+
+            {/* Icône panier */}
+            <PanierIcon />
 
             <Link
               href="/student"

@@ -17,15 +17,12 @@ class Service implements Service {
         try {
             const res = await fetch(`${config.base_url}/section/${this._id}`);
             const data: Response = await res.json();
-            if (data.success) {
-                return data.data as Section;
-            }
+            console.log("Section data: ", data);  
+            return data.success ? data.data as Section : null;
         } catch (error) {
             console.error("Error fetching section:", error);
             return null;
         }
-        
-        return null;
     }
 
     async fetchAnnees() : Promise<Annee[] | null> {
