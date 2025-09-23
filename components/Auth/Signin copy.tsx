@@ -1,6 +1,4 @@
 "use client";
-import EtudiantService from "@/app/services/EtudiantService";
-import { useUserAuthStore } from "@/store/userStore";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,33 +6,9 @@ import { useState } from "react";
 
 const Signin = () => {
   const [data, setData] = useState({
-    matricule: "",
+    email: "",
     password: "",
   });
-
-  const { login, isAuthenticated, isLoading, error } = useUserAuthStore();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Tentative de connexion:", data);
-
-    try {
-      const response = await login(data);
-      console.log("Response request:", response);
-      
-      if (response) {
-        console.log("Connexion réussie!");
-        // La redirection sera gérée par AuthGuard
-        window.location.href = "/dashboard";
-      } else {
-        console.error("Échec de la connexion:", error);
-        alert(error || "Échec de la connexion");
-      }
-    } catch (err) {
-      console.error("Error request:", err);
-      alert("Erreur lors de la connexion. Vérifiez vos identifiants.");
-    }
-  };
 
   return (
     <>
@@ -76,11 +50,11 @@ const Signin = () => {
             className="animate_top rounded-lg bg-white px-7.5 pt-7.5 shadow-solid-8 dark:border dark:border-strokedark dark:bg-black xl:px-15 xl:pt-15"
           >
             <h2 className="mb-15 text-center text-3xl font-semibold text-black dark:text-white xl:text-sectiontitle2">
-              Se Connecter
+              Login to Your Account
             </h2>
             <div className="flex flex-col">
               <div className="flex items-center gap-8">
-                {/* <button
+                <button
                   aria-label="sign with google"
                   className="text-body-color dark:text-body-color-dark dark:shadow-two mb-6 flex w-full items-center justify-center rounded-xs border border-stroke bg-[#f8f8f8] px-6 py-3 text-base outline-hidden transition-all duration-300 hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-transparent dark:bg-[#2C303B] dark:hover:border-primary dark:hover:bg-primary/5 dark:hover:text-primary dark:hover:shadow-none"
                 >
@@ -136,31 +110,31 @@ const Signin = () => {
                     </svg>
                   </span>
                   Signup with Github
-                </button> */}
+                </button>
               </div>
             </div>
             <div className="mb-10 flex items-center justify-center">
               <span className="dark:bg-stroke-dark hidden h-[1px] w-full max-w-[200px] bg-stroke dark:bg-strokedark sm:block"></span>
               <p className="text-body-color dark:text-body-color-dark w-full px-5 text-center text-base">
-                Utilisez votre matricule de connexion et votre mot de passe
+                Or, login with your email
               </p>
               <span className="dark:bg-stroke-dark hidden h-[1px] w-full max-w-[200px] bg-stroke dark:bg-strokedark sm:block"></span>
             </div>
 
-            <form onSubmit={handleSubmit}>
+            <form>
               <div className="mb-7.5 flex flex-col gap-7.5 lg:mb-12.5 lg:flex-row lg:justify-between lg:gap-14">
                 <input
                   type="text"
-                  placeholder="Entrer votre matricule"
-                  name="matricule"
-                  value={data.matricule}
-                  onChange={(e) => setData({ ...data, matricule: e.target.value })}
+                  placeholder="Email"
+                  name="email"
+                  value={data.email}
+                  onChange={(e) => setData({ ...data, email: e.target.value })}
                   className="w-full border-b border-stroke bg-white! pb-3.5 focus:border-waterloo focus:placeholder:text-black focus-visible:outline-hidden dark:border-strokedark dark:bg-black! dark:focus:border-manatee dark:focus:placeholder:text-white lg:w-1/2"
                 />
 
                 <input
                   type="password"
-                  placeholder="Entrer votre mot de passe"
+                  placeholder="Password"
                   name="password"
                   value={data.password}
                   onChange={(e) =>
@@ -173,6 +147,11 @@ const Signin = () => {
               <div className="flex flex-wrap items-center gap-10 md:justify-between xl:gap-15">
                 <div className="flex flex-wrap gap-4 md:gap-10">
                   <div className="mb-4 flex items-center">
+                    <input
+                      id="default-checkbox"
+                      type="checkbox"
+                      className="peer sr-only"
+                    />
                     <span className="border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700 group mt-1 flex h-5 min-w-[20px] items-center justify-center rounded-sm peer-checked:bg-primary">
                       <svg
                         className="opacity-0 in-[.group]:peer-checked:opacity-100"
@@ -194,17 +173,20 @@ const Signin = () => {
                       htmlFor="default-checkbox"
                       className="flex max-w-[425px] cursor-pointer select-none pl-3"
                     >
-                      Veuillez voir l'administrateur si vous avez perdu votre mot de passe
+                      Keep me signed in
                     </label>
                   </div>
+
+                  <a href="#" className="hover:text-primary">
+                    Forgot Password?
+                  </a>
                 </div>
 
                 <button
                   aria-label="login with email and password"
                   className="inline-flex items-center gap-2.5 rounded-full bg-black px-6 py-3 font-medium text-white duration-300 ease-in-out hover:bg-blackho dark:bg-btndark dark:hover:bg-blackho"
-                  type="submit"
                 >
-                  Connexion
+                  Log in
                   <svg
                     className="fill-white"
                     width="14"
@@ -223,12 +205,12 @@ const Signin = () => {
 
               <div className="mt-12.5 border-t border-stroke py-5 text-center dark:border-strokedark">
                 <p>
-                  N'avez vous pas de compte?{" "}
+                  Don't have an account?{" "}
                   <Link
                     className="text-black hover:text-primary dark:text-white dark:hover:text-primary"
-                    href="/"
+                    href="/auth/signup"
                   >
-                    S'inscrire
+                    Sign Up
                   </Link>
                 </p>
               </div>

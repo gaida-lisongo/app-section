@@ -1,4 +1,5 @@
 import Signup from "@/components/Auth/Signup";
+import SectionLoader from "@/components/Common/SectionLoader";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default function Register() {
   return (
     <>
+      <SectionLoader title="Vérification de l'authentification..." />
       <Signup />
     </>
   );

@@ -1,16 +1,116 @@
+import { Annee } from "@/app/services/CommandeService";
+import { Section } from "./section";
+
+// Types pour les charges horaires
+export interface ChargeHoraire {
+  _id: string;
+  agentId: string;
+  coursId: string;
+  anneeId: string;
+  status: 'ok' | 'no' | 'pending';
+  __v: number;
+}
+
+// Types pour les fiches de cotation
+export interface FicheCotation {
+  _id: string;
+  chargeId: ChargeHoraire;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  logs: any[];
+  __v: number;
+  etudiantId: string;
+  reference: string;
+}
+
+// Types pour les cours
+export interface Cours {
+  _id: string;
+  titre: string;
+  description: string;
+  enseignement: string[];
+  credit: number;
+  contenu: any[];
+  repartition: any[];
+  plan: any[];
+  seances: any[];
+  travaux: any[];
+  ressources: any[];
+  penalites: any[];
+  plagiat: any[];
+  __v: number;
+  fiche_cotation: FicheCotation | null;
+}
+
+// Types pour les descripteurs d'unités
+export interface Descripteur {
+  mention: string;
+  code: string;
+  designation: string;
+  credit: number;
+  type: 'Obligatoire' | 'Optionnelle';
+  prealables: any[];
+  objectif: string[];
+  competences: string[];
+  approches: any[];
+  evaluation: any[];
+}
+
+// Types pour les responsables
+export interface Responsable {
+  titulaireId: string;
+  anneeId: string;
+  _id: string;
+}
+
+// Types pour les unités d'enseignement
+export interface UniteEnseignement {
+  descripteur: Descripteur;
+  _id: string;
+  semestreId: string;
+  responsable: Responsable[];
+  ressources: string[];
+  bibliographie: any[];
+  videographie: any[];
+  cours: Cours[];
+  __v: number;
+}
+
+// Types pour les inscriptions
+export interface Inscription {
+  anneeId: string;
+  produitId: string;
+  _id: string;
+}
+
+// Types pour les semestres
 export interface Semestre {
   _id: string;
-  numero: number;
-  annee_academique: string;
-  notes?: Note[];
+  designation: string;
+  description: string;
+  unites: UniteEnseignement[];
+  insription: Inscription[];
+  __v: number;
 }
 
-export interface Note {
-  matiere: string;
-  note: number;
-  credits: number;
+// Types pour les produits (recherches, stages, validations, etc.)
+export interface Produit {
+  _id: string;
+  benefice: string[];
+  designation: string;
+  image: string;
+  montant: number;
+  caracteristiques: string[];
+  sectionId: string | Section;
+  anneeId: string | Annee;
+  categorie: string[];
+  avantages: string[];
+  __v: number;
 }
 
+// Type alias pour les produits avec statut
+export type ProduitWithStatus = Produit & { status: "OK" | "PENDING" | "NO" };
+
+// Type principal pour l'étudiant
 export interface Etudiant {
   _id: string;
   nom: string;
@@ -19,14 +119,39 @@ export interface Etudiant {
   sexe: 'M' | 'F';
   nationalite: string;
   lieu_naissance: string;
-  date_naissance: Date | string;
+  date_naissance: string;
   matricule: string;
-  sectionId: string; // Référence à la section
-  secure: string; // mot de passe
+  sectionId?: string;
+  anneeId?: string;
+  secure: string;
+  documents: string[];
+  photo: string;
+  semestres: any[];
+  __v: number;
   solde: number;
-  documents?: string[]; // URLs des documents
-  photo?: string;
-  semestres?: Semestre[]; // Géré par l'étudiant lui-même
-  created_at: Date | string;
-  updated_at?: Date | string;
+}
+
+// Type pour la réponse complète de l'authentification
+export interface AuthResponse {
+  token: string;
+  etudiant: Etudiant;
+  mySemestres: Semestre[];
+  myRecherches: ProduitWithStatus[];
+  myStages: ProduitWithStatus[];
+  myValidations: ProduitWithStatus[];
+  myReleves: ProduitWithStatus[];
+  mySessions: ProduitWithStatus[];
+}
+
+// Type pour les données de connexion
+export interface LoginCredentials {
+  matricule: string;
+  password: string;
+}
+
+// Type pour la réponse de l'API de connexion
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  data: AuthResponse;
 }

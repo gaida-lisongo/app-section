@@ -4,12 +4,17 @@ import Image from "next/image";
 import { useState } from "react";
 import FAQItem from "./FAQItem";
 import faqData from "./faqData";
+import { ProduitWithStatus } from "@/types/etudiant";
 
-const FAQ = () => {
-  const [activeFaq, setActiveFaq] = useState(1);
+const FAQ = ({
+  produits
+}: {
+  produits: ProduitWithStatus[];
+}) => {
+  const [activeFaq, setActiveFaq] = useState<string>("");
 
-  const handleFaqToggle = (id: number) => {
-    activeFaq === id ? setActiveFaq(0) : setActiveFaq(id);
+  const handleFaqToggle = (id: string) => {
+    activeFaq === id ? setActiveFaq("") : setActiveFaq(id);
   };
 
   return (
@@ -32,7 +37,7 @@ const FAQ = () => {
             />
           </div>
           <div className="flex flex-wrap gap-8 md:flex-nowrap md:items-center xl:gap-32.5">
-            <motion.div
+            {/* <motion.div
               variants={{
                 hidden: {
                   opacity: 0,
@@ -61,10 +66,10 @@ const FAQ = () => {
               </h2>
 
               <a
-                href="#"
+                href="/produits"
                 className="group mt-7.5 inline-flex items-center gap-2.5 text-black hover:text-primary dark:text-white dark:hover:text-primary"
               >
-                <span className="duration-300 group-hover:pr-2">Know More</span>
+                <span className="duration-300 group-hover:pr-2">Tous les documents</span>
                 <svg
                   width="14"
                   height="14"
@@ -77,7 +82,7 @@ const FAQ = () => {
                   />
                 </svg>
               </a>
-            </motion.div>
+            </motion.div> */}
 
             <motion.div
               variants={{
@@ -95,13 +100,15 @@ const FAQ = () => {
               whileInView="visible"
               transition={{ duration: 1, delay: 0.1 }}
               viewport={{ once: true }}
-              className="animate_right md:w-3/5 lg:w-1/2"
+              className="w-full"
             >
-              <div className="rounded-lg bg-white shadow-solid-8 dark:border dark:border-strokedark dark:bg-blacksection">
-                {faqData.map((faq, key) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {produits.map((data, key) => (
                   <FAQItem
                     key={key}
-                    faqData={{ ...faq, activeFaq, handleFaqToggle }}
+                    activeFaq={activeFaq}
+                    handleFaqToggle={handleFaqToggle}
+                    produit={data}
                   />
                 ))}
               </div>
