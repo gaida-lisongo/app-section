@@ -13,7 +13,7 @@ const ProductDetailPage = () => {
   const params = useParams();
   const slug = params.slug as string;
   
-  const [produits, setProduits] = useState<Produit[]>([]);
+  const [produits, setProduits] = useState<Produit | null>(null);
   const [selectedProduit, setSelectedProduit] = useState<Produit | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,14 +33,25 @@ const ProductDetailPage = () => {
         if (!anneeId) {
           throw new Error('Format de slug invalide. Attendu: anneeId-sectionId');
         }
-        
-        const data = sectionId ?  await ProduitService.getProduitByAnneeAndSection(anneeId, sectionId) : await ProduitService.getProduit(anneeId);
+        let data: Produit | null = null;
+
+        if(sectionId) {
+          const res = await ProduitService.getProduitByAnneeAndSection(anneeId, sectionId);
+          if(res){
+            data = res[0];
+          }
+        } else {
+          const res = await ProduitService.getProduit(anneeId);
+          if(res){
+            data = res;
+          }
+        }
         console.log("Detail produit:", data);
-        setProduits(data);
+        data &&setProduits(data);
         
         // Sélectionner le premier produit par défaut
-        if (data.length > 0) {
-          setSelectedProduit(data[0]);
+        if (data) {
+          setSelectedProduit(data);
         }
       } catch (err) {
         setError('Produits non trouvés pour cette année et section');
@@ -103,7 +114,7 @@ const ProductDetailPage = () => {
     <section className="pb-20 pt-35 lg:pb-25 lg:pt-45 xl:pb-30 xl:pt-50">
       <div className="mx-auto max-w-c-1390 px-4 md:px-8 2xl:px-0">
         {/* Sélecteur de produits si plusieurs disponibles */}
-        {produits.length > 1 && (
+        {/* {produits && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,7 +140,7 @@ const ProductDetailPage = () => {
               ))}
             </div>
           </motion.div>
-        )}
+        )} */}
 
         <div className="grid gap-12 lg:grid-cols-2">
           {/* Image du produit */}

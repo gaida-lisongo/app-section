@@ -29,8 +29,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
 
   const infoSection = () => {
-    
-    if(section?._id != produit.sectionId) {
+    const sectionId = typeof produit.sectionId === 'object' ? produit.sectionId._id : produit.sectionId;
+    if(section?._id != sectionId) {
       return (
         <div>
           <p>Voir autre section</p>
@@ -69,7 +69,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const getImageSrc = () => {
     if (imageError || !produit.image) {
-      return '/images/products/default-product.jpg';
+      return '/images/features/document-4.jpg';
     }
     return produit.image.startsWith('http') ? produit.image : `/images/products/${produit.image}`;
   };
