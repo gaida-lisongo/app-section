@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import StudentTab from "@/components/FeaturesTab/StudentTab";
+import SectionLoader from "@/components/Common/SectionLoader";
 
 interface StudentData {
   nom: string;
@@ -75,9 +76,10 @@ export default function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <SectionLoader
+        title="Chargement des données..."
+        subtitle="Récupération des informations..."
+       />
     );
   }
 
@@ -85,7 +87,7 @@ export default function StudentDashboard() {
     <div className="space-y-8">
       <StudentTab />
       {/* Header de bienvenue */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -107,10 +109,10 @@ export default function StudentDashboard() {
           </div>
           <div className="text-6xl">👨‍🎓</div>
         </div>
-      </motion.div>
+      </motion.div> */}
 
       {/* Actions rapides */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -142,10 +144,10 @@ export default function StudentDashboard() {
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </motion.div> */}
 
       {/* Statistiques ou informations récentes */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
@@ -168,7 +170,7 @@ export default function StudentDashboard() {
             <p className="text-gray-600 dark:text-gray-300">En Cours</p>
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
     </div>
   );
 }

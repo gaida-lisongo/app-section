@@ -115,6 +115,58 @@ class EtudiantService {
         localStorage.removeItem('studentData');
         localStorage.removeItem('studentFullData');
     }
+
+    async createRapport ({
+        document,
+        type,
+        productId,
+        etudiantId
+    }: {
+        document: string,
+        type: string,
+        productId: string,
+        etudiantId: string
+    }): Promise<{success: boolean; message: string; data: any}> {
+        try {
+            const response = await fetch(`${this.baseUrl}/rapport`, {
+                method: "POST",
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify({
+                    document,
+                    type,
+                    produitId: productId,
+                    etudiantId
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erreur lors de la création de la résolution:", error);
+            throw error;
+        }
+    }
+
+    async fetchRapport(etudiantId: string): Promise<{success: boolean; message: string; data: any}> {
+        try {
+            const response = await fetch(`${this.baseUrl}/rapport/${etudiantId}`, {
+                method: "GET",
+                headers: this.getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erreur lors de la récupération des rapports:", error);
+            throw error;
+        }
+    }
 }
 
 export default new EtudiantService();

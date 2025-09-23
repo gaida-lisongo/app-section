@@ -4,6 +4,10 @@ import Image from "next/image";
 import FAQ from "../FAQ";
 import Pricing from "../Pricing";
 import { useUserAuthStore } from "@/store/userStore";
+import RechercheDetail from "../Enseignement/RechercheDetail";
+import ProduitRapportList from "../Etudiant/ProduitRapportList";
+import SemestresDetail from "../Etudiant/SemestresDetail";
+import ECUEList from "../Etudiant/ECUEList";
 
 const FeaturesTabItem = ({ featureTab, id }: { featureTab: FeatureTab, id: string }) => {
   const { title, desc1, desc2, image, imageDark } = featureTab;
@@ -14,18 +18,19 @@ const FeaturesTabItem = ({ featureTab, id }: { featureTab: FeatureTab, id: strin
     myValidations,
     myReleves,
     mySessions,
+    etudiant
 
   } = useUserAuthStore();
 
   const renderEnseignement = () => {
     console.log("Data semestres student :", mySemestres);
-    return <Pricing />
+    return <ECUEList semestres={mySemestres} />
   }
 
   const renderRecherche = () => {
     console.log("Data stages student :", myStages);
     console.log("Data recherches student :", myRecherches);
-    return <Pricing />
+    return <ProduitRapportList etudiantId={etudiant?._id || ""} produits={[...myRecherches, ...myStages]} />  
   }
 
   const renderDocument = () => {

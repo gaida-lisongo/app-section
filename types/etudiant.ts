@@ -14,12 +14,16 @@ export interface ChargeHoraire {
 // Types pour les fiches de cotation
 export interface FicheCotation {
   _id: string;
-  chargeId: ChargeHoraire;
+  chargeId: string | ChargeHoraire;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   logs: any[];
   __v: number;
+  cmi?: string;
+  examen?: string;
+  rattrapage?: string;
   etudiantId: string;
-  reference: string;
+  author?: string;
+  reference?: string;
 }
 
 // Types pour les cours
@@ -29,16 +33,28 @@ export interface Cours {
   description: string;
   enseignement: string[];
   credit: number;
-  contenu: any[];
-  repartition: any[];
-  plan: any[];
-  seances: any[];
-  travaux: any[];
-  ressources: any[];
-  penalites: any[];
-  plagiat: any[];
+  contenu: string[];
+  repartition: string[];
+  plan: {
+    anneeId: string | Annee;
+    contenu: string[];
+  }[];
+  seances?: {
+    anneeId: string | Annee;
+    produitId: string | Produit;
+    status: 'PENDING' | 'OK' | 'NO';
+  }[];
+  travaux?: {
+    anneeId: string | Annee;
+    questionnaire?: string;
+    produitId: string | Produit;
+    status: 'PENDING' | 'OK' | 'NO';
+  }[];
+  ressources?: string[];
+  penalites?: string[];
+  plagiat?: string[];
   __v: number;
-  fiche_cotation: FicheCotation | null;
+  fiche_cotation?: FicheCotation | null;
 }
 
 // Types pour les descripteurs d'unités
