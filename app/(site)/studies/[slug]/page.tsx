@@ -8,7 +8,7 @@ import { useSectionStore } from '@/store';
 import SectionLoader from '@/components/Common/SectionLoader';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import InscriptionModal from '@/components/Enseignement/InscriptionModal';
+import SemestreDetail from '@/components/Enseignement/SemestreDetail';
 
 const ProgramPage = () => {
     const params = useParams();
@@ -19,8 +19,6 @@ const ProgramPage = () => {
     const [cycle, setCycle] = useState<Cycle | null>(null);
     const [semestres, setSemestres] = useState<SemestreWithUnites[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedSemestre, setSelectedSemestre] = useState<string | null>(null);
-    const [showInscriptionModal, setShowInscriptionModal] = useState(false);
 
     useEffect(() => {
         const fetchClasseData = async () => {
@@ -67,10 +65,6 @@ const ProgramPage = () => {
         }
     }, [slug]);
 
-    const handleInscription = (semestreId: string) => {
-        setSelectedSemestre(semestreId);
-        setShowInscriptionModal(true);
-    };
 
     if (loading) {
         return <SectionLoader title="Chargement du programme..." />;
@@ -90,7 +84,7 @@ const ProgramPage = () => {
     }
 
     return (
-        <div className="lg:w-2/3">
+        <div className="lg:w-4/5">
             <div className="animate_top rounded-md border border-stroke bg-white p-7.5 shadow-solid-13 dark:border-strokedark dark:bg-blacksection md:p-10">
                 {/* Header du programme */}
                 <div className="mb-8">
@@ -160,111 +154,21 @@ const ProgramPage = () => {
                         Semestres disponibles
                     </h2>
                     
-                    <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-8">
                         {semestres.map((semestre, index) => (
-                            <SemestreCard
+                            <SemestreDetail
                                 key={semestre._id}
                                 semestre={semestre}
                                 index={index}
-                                onInscription={() => handleInscription(semestre._id || '')}
+                                classeName={classe.designation}
                             />
                         ))}
                     </div>
                 </div>
             </div>
-            
-            {/* Modal d'inscription */}
-            <InscriptionModal
-                isOpen={showInscriptionModal}
-                onClose={() => setShowInscriptionModal(false)}
-                semestre={semestres.find(s => s._id === selectedSemestre) || null}
-                classeName={classe.designation}
-            />
         </div>
     );
 }
 
-// Composant pour afficher une carte de semestre
-interface SemestreCardProps {
-    semestre: SemestreWithUnites;
-    index: number;
-    onInscription: () => void;
-}
-
-const SemestreCard: React.FC<SemestreCardProps> = ({ semestre, index, onInscription }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="group overflow-hidden rounded-xl border border-stroke bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl dark:border-strokedark dark:bg-blacksection"
-        >
-            {/* Header du semestre */}
-            <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                        S{index + 1}
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-black dark:text-white">
-                            {semestre.designation}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {semestre.unites?.length || 0} unité{(semestre.unites?.length || 0) > 1 ? 's' : ''}
-                        </p>
-                    </div>
-                </div>
-                
-                <div className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-600 dark:bg-green-900 dark:text-green-400">
-                    Disponible
-                </div>
-            </div>
-
-            {/* Description */}
-            <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-                {semestre.description || "Formation complète avec des unités d'enseignement spécialisées."}
-            </p>
-
-            {/* Unités d'enseignement */}
-            {semestre.unites && semestre.unites.length > 0 && (
-                <div className="mb-6">
-                    <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Unités d'enseignement
-                    </h4>
-                    <div className="flex flex-wrap gap-1">
-                        {semestre.unites.slice(0, 3).map((unite, uniteIndex) => (
-                            <span
-                                key={uniteIndex}
-                                className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary"
-                            >
-                                {unite?.descripteur?.designation || `Unité ${uniteIndex + 1}`}
-                            </span>
-                        ))}
-                        {semestre.unites.length > 3 && (
-                            <span className="rounded-full bg-gray-200 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                +{semestre.unites.length - 3} autres
-                            </span>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Bouton d'inscription */}
-            <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onInscription}
-                className="w-full rounded-lg bg-gradient-to-r from-primary to-secondary px-4 py-3 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg"
-            >
-                <span className="flex items-center justify-center gap-2">
-                    S'inscrire au semestre
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                </span>
-            </motion.button>
-        </motion.div>
-    );
-};
 
 export default ProgramPage

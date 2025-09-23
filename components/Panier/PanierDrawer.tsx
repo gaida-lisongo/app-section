@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePanierStore } from "@/store/panierStore";
 import { formatPriceFC } from "@/utils/priceFormatter";
 import CheckoutModal from "./CheckoutModal";
+import CommandeService from "@/app/services/CommandeService";
 
 const PanierDrawer: React.FC = () => {
   const {
@@ -17,9 +18,12 @@ const PanierDrawer: React.FC = () => {
     viderPanier,
     getTotalPrice,
     getTotalItems,
+    setCheckoutData,
+    getProductIds,
   } = usePanierStore();
 
   const [showCheckout, setShowCheckout] = useState(false);
+  const [isCreatingCommande, setIsCreatingCommande] = useState(false);
 
   const handleQuantityChange = (produitId: string, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -29,8 +33,62 @@ const PanierDrawer: React.FC = () => {
     }
   };
 
-  const proceedToCheckout = () => {
-    setShowCheckout(true);
+  const proceedToCheckout = async () => {
+    if (items.length === 0) return;
+
+    setIsCreatingCommande(true);
+
+    try {
+      // Créer une commande avec les produits du panier
+      const commandeData = {
+        productIds: getProductIds(),
+        statu: 'NO' as const,
+        reference: CommandeService.generateReference('CMD'),
+        matricule: '', // Sera rempli dans le CheckoutModal
+        telephone: '', // Sera rempli dans le CheckoutModal
+        currency: 'CDF',
+        montant: getTotalPrice()
+      };
+
+      console.log("Commande data:", commandeData);
+      // Valider les données
+      const validation = CommandeService.validateCommandeData(commandeData);
+      console.log("Validation result:", validation);
+      if (!validation.isValid) {
+        throw new Error('Erreurs de validation:\n' + validation.errors.join('\n'));
+      }
+
+      // Créer la commande
+      const result = await CommandeService.createCommande(commandeData);
+      console.log("Commande result:", result);
+      if (result.status !== 200 && result.status !== 201) {
+        throw new Error('Erreur lors de la création de la commande');
+      }
+
+      // Stocker les données de checkout avec l'ID de la commande
+      setCheckoutData({
+        _id: result.data?._id,
+        statut: 'NO',
+        matricule: '',
+        telephone: '',
+        productIds: getProductIds(),
+        produits: items,
+        montant: getTotalPrice(),
+        currency: 'CDF',
+        reference: result.data?.reference
+      });
+
+      console.log('Commande créée avec succès:', result.data);
+      
+      // Ouvrir le modal de checkout
+      setShowCheckout(true);
+
+    } catch (error) {
+      console.error('Erreur lors de la création de la commande:', error);
+      alert('Erreur lors de la création de la commande. Veuillez réessayer.');
+    } finally {
+      setIsCreatingCommande(false);
+    }
   };
 
   return (
@@ -93,7 +151,7 @@ const PanierDrawer: React.FC = () => {
                     <div className="space-y-4">
                       {items.map((item, index) => (
                         <motion.div
-                          key={`drawer-item-${index}`}
+                          key={`${index}`}
                           layout
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -182,12 +240,20 @@ const PanierDrawer: React.FC = () => {
                     {/* Boutons d'action */}
                     <div className="space-y-3">
                       <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{ scale: isCreatingCommande ? 1 : 1.02 }}
+                        whileTap={{ scale: isCreatingCommande ? 1 : 0.98 }}
                         onClick={proceedToCheckout}
-                        className="w-full rounded-xl bg-gradient-to-r from-primary to-secondary px-6 py-4 text-lg font-semibold text-white transition-all duration-300 hover:shadow-lg"
+                        disabled={isCreatingCommande}
+                        className="w-full rounded-xl bg-gradient-to-r from-primary to-secondary px-6 py-4 text-lg font-semibold text-white transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Procéder au checkout
+                        {isCreatingCommande ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                            Création de la commande...
+                          </span>
+                        ) : (
+                          'Procéder au checkout'
+                        )}
                       </motion.button>
 
                       <div className="flex gap-3">

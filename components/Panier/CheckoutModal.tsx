@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePanierStore, CheckoutData } from "@/store/panierStore";
 import { formatPriceFC } from "@/utils/priceFormatter";
 import CommandeService from "@/app/services/CommandeService";
+import { PDFGeneratorPdfMake } from "@/utils/PDFGeneratorPdfMake";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -17,7 +18,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     getTotalPrice, 
     getTotalItems, 
     setCheckoutData, 
-    viderPanier 
+    viderPanier,
+    checkoutData
   } = usePanierStore();
 
   const [formData, setFormData] = useState<CheckoutData>({
@@ -25,6 +27,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     nom: '',
     email: '',
     telephone: '',
+    statut: 'NO', // Statut initial de la commande
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,17 +36,20 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   const validateForm = (): boolean => {
     const newErrors: Partial<CheckoutData> = {};
 
-    if (!formData.matricule.trim()) {
+    // Validation du matricule (requis)
+    if (!formData.matricule || !formData.matricule.trim()) {
       newErrors.matricule = 'Le matricule est requis';
-    } else if (formData.matricule.length < 5) {
+    } else if (formData.matricule.trim().length < 5) {
       newErrors.matricule = 'Le matricule doit contenir au moins 5 caractères';
     }
 
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+    // Validation de l'email (optionnel mais doit être valide si fourni)
+    if (formData.email && formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email.trim())) {
       newErrors.email = 'Email invalide';
     }
 
-    if (formData.telephone && !/^[+]?[\d\s-()]{8,}$/.test(formData.telephone)) {
+    // Validation du téléphone (optionnel mais doit être valide si fourni)
+    if (formData.telephone && formData.telephone.trim() && !/^[+]?[\d\s-()]{8,}$/.test(formData.telephone.trim())) {
       newErrors.telephone = 'Numéro de téléphone invalide';
     }
 
@@ -55,42 +61,64 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
     
     if (!validateForm()) return;
+    if (!checkoutData?._id) {
+      alert('Erreur: Aucune commande trouvée. Veuillez réessayer.');
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
-      // Créer une commande pour chaque produit (selon la nouvelle structure API)
-      const commandesPromises = items.map(async (item) => {
-        const commandeData = {
-          productId: item.produit._id!,
-          statu: 'PENDING' as const,
-          reference: CommandeService.generateReference('CMD'),
-          anneeId: typeof item.produit.anneeId === 'object' ? item.produit.anneeId._id! : item.produit.anneeId
-        };
+      // Mettre à jour la commande existante avec les informations du formulaire
+      const updateData = {
+        matricule: formData.matricule.trim(),
+        telephone: formData.telephone?.trim() || '',
+        statu: 'OK' as const // Marquer la commande comme confirmée
+      };
 
-        // Valider les données
-        const validation = CommandeService.validateCommandeData(commandeData);
-        if (!validation.isValid) {
-          throw new Error('Erreurs de validation:\n' + validation.errors.join('\n'));
-        }
+      //Garder le 9 derniers chiffres du telephone puis ajouter 243 comme prefixe
+      const phone = formData.telephone?.trim().slice(-9);
 
-        return CommandeService.createCommande(commandeData);
-      });
-
-      // Exécuter toutes les commandes
-      const results = await Promise.all(commandesPromises);
+      const result = await CommandeService.createPayment(checkoutData._id, `${formData.nom}*${formData.email}*${formData.matricule}*243${phone}`);
+      console.log('Payment result:', result);
       
-      // Vérifier si toutes les commandes ont réussi
-      const failedCommandes = results.filter(result => result.status !== 200 && result.status !== 201);
-      
-      if (failedCommandes.length > 0) {
-        throw new Error('Certaines commandes ont échoué');
+      if (result.status !== 200) {
+        throw new Error('Erreur lors de la mise à jour de la commande');
       }
 
-      // Sauvegarder les données de checkout
-      setCheckoutData(formData);
+      // Mettre à jour les données de checkout avec les informations du formulaire
+      setCheckoutData({
+        ...checkoutData,
+        ...formData,
+        statut: 'PENDING'
+      });
 
-      console.log('Commandes créées avec succès:', results);
+      console.log('Commande mise à jour avec succès:', result.data);
+
+      const {
+        success,
+        data
+      } = result.data;
+
+      if (!success) {
+        throw new Error('Erreur lors de la mise à jour de la commande');
+      }
+      // Générer la facture PDF
+      try {
+        const pdfGenerator = new PDFGeneratorPdfMake();
+        const studentInfo = {
+          nom: formData.nom || 'N/A',
+          email: formData.email || 'N/A',
+          reference: checkoutData.reference
+        };
+        
+        
+        await pdfGenerator.generateInvoicePdf(data, items, studentInfo);
+        console.log('Facture PDF générée avec succès');
+      } catch (pdfError) {
+        console.error('Erreur lors de la génération du PDF:', pdfError);
+        // Ne pas bloquer le processus si la génération PDF échoue
+      }
 
       // Vider le panier après succès
       viderPanier();
@@ -98,20 +126,21 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
       // Fermer le modal
       onClose();
 
-      // Afficher un message de succès
-      const references = results.map(r => r.data.data?.reference).filter(Boolean);
-      alert(`Commandes créées avec succès !\nRéférences: ${references.join(', ')}\nVous recevrez une confirmation par email.`);
+      // Afficher un message de succès avec la référence
+      alert(`Commande confirmée avec succès !\nRéférence: ${checkoutData.reference}\nVotre facture a été téléchargée automatiquement.`);
 
     } catch (error) {
-      console.error('Erreur lors de la création des commandes:', error);
-      alert('Erreur lors de la création des commandes. Veuillez réessayer.');
+      console.error('Erreur lors de la confirmation de la commande:', error);
+      alert('Erreur lors de la confirmation de la commande. Veuillez réessayer.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleInputChange = (field: keyof CheckoutData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Pour le matricule, on retire les espaces en début et fin automatiquement
+    const processedValue = field === 'matricule' ? value.trim() : value;
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
     // Effacer l'erreur du champ modifié
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -156,6 +185,25 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
               {/* Contenu */}
               <div className="p-6">
+                {/* Référence de commande */}
+                {checkoutData?.reference && (
+                  <div className="mb-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                    <div className="flex items-center gap-2">
+                      <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          Référence de commande
+                        </p>
+                        <p className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                          {checkoutData.reference}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Résumé de la commande */}
                 <div className="mb-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                   <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
@@ -282,7 +330,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                           Traitement...
                         </span>
                       ) : (
-                        `Confirmer la commande (${formatPriceFC(getTotalPrice())})`
+                        `Finaliser la commande (${formatPriceFC(getTotalPrice())})`
                       )}
                     </motion.button>
                   </div>

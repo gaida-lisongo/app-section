@@ -1,9 +1,11 @@
 export interface Commande {
   _id?: string;
-  productId: string;
-  statu: 'NO' | 'PENDING' | 'OK';
-  reference: string;
-  anneeId: string;
+  productIds: string[];
+  statu?: 'NO' | 'PENDING' | 'OK';
+  matricule?: string;
+  telephone?: string;
+  currency?: string;
+  reference?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -54,7 +56,7 @@ class CommandeService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = 'https://server.inbtp.net/api/v1/vente';
+    this.baseUrl = 'http://192.168.1.66:4001/api/v1';
   }
 
   private getAuthHeaders(): HeadersInit {
@@ -97,11 +99,25 @@ class CommandeService {
   /**
    * Créer une nouvelle commande
    */
-  async createCommande(commandeData: Omit<Commande, '_id' | 'createdAt' | 'updatedAt'>): Promise<{status: number, data: ApiResponse<Commande>}> {
-    const url = `${this.baseUrl}/commande`;
+  async createCommande(commandeData: Omit<Commande, '_id' | 'createdAt' | 'updatedAt'>): Promise<{status: number, data: Commande}> {
+    const url = `${this.baseUrl}/vente/commande`;
     return this.makeRequest(url, {
       method: 'POST',
       body: JSON.stringify(commandeData),
+    });
+  }
+
+  async createPayment(id: string, reference: string): Promise<{status: number, data: any}> {
+    const referenceData = reference.split('*');
+    const url = `${this.baseUrl}/payment/${encodeURIComponent(id)}`;
+    return this.makeRequest(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        matricule: referenceData[2],
+        email: referenceData[1],
+        telephone: referenceData[3],
+        nom: referenceData[0],
+      }),
     });
   }
 
@@ -109,7 +125,7 @@ class CommandeService {
    * Récupérer toutes les commandes
    */
   async getAllCommandes(): Promise<{status: number, data: ApiResponse<Commande[]>}> {
-    const url = `${this.baseUrl}/commande`;
+    const url = `${this.baseUrl}/vente/commande`;
     return this.makeRequest(url);
   }
 
@@ -117,7 +133,7 @@ class CommandeService {
    * Récupérer une commande par ID
    */
   async getCommandeById(id: string): Promise<{status: number, data: ApiResponse<Commande>}> {
-    const url = `${this.baseUrl}/commande/${encodeURIComponent(id)}`;
+    const url = `${this.baseUrl}/vente/commande/${encodeURIComponent(id)}`;
     return this.makeRequest(url);
   }
 
@@ -125,7 +141,7 @@ class CommandeService {
    * Modifier une commande
    */
   async updateCommande(id: string, commandeData: Partial<Commande>): Promise<{status: number, data: ApiResponse<Commande>}> {
-    const url = `${this.baseUrl}/commande/${encodeURIComponent(id)}`;
+    const url = `${this.baseUrl}/vente/commande/${encodeURIComponent(id)}`;
     return this.makeRequest(url, {
       method: 'PUT',
       body: JSON.stringify(commandeData),
@@ -136,7 +152,7 @@ class CommandeService {
    * Supprimer une commande
    */
   async deleteCommande(id: string): Promise<{status: number, data: ApiResponse}> {
-    const url = `${this.baseUrl}/commande/${encodeURIComponent(id)}`;
+    const url = `${this.baseUrl}/vente/commande/${encodeURIComponent(id)}`;
     return this.makeRequest(url, {
       method: 'DELETE',
     });
@@ -148,7 +164,7 @@ class CommandeService {
    * Récupérer les commandes par année
    */
   async getCommandesByAnnee(anneeId: string): Promise<{status: number, data: ApiResponse<Commande[]>}> {
-    const url = `${this.baseUrl}/commande?anneeId=${encodeURIComponent(anneeId)}`;
+    const url = `${this.baseUrl}/vente/commande?anneeId=${encodeURIComponent(anneeId)}`;
     return this.makeRequest(url);
   }
 
@@ -157,8 +173,8 @@ class CommandeService {
    */
   async getCommandeStats(anneeId?: string): Promise<{status: number, data: ApiResponse<CommandeStats>}> {
     const url = anneeId 
-      ? `${this.baseUrl}/commande/stats?anneeId=${encodeURIComponent(anneeId)}`
-      : `${this.baseUrl}/commande/stats`;
+      ? `${this.baseUrl}/vente/commande/stats?anneeId=${encodeURIComponent(anneeId)}`
+      : `${this.baseUrl}/vente/commande/stats`;
     return this.makeRequest(url);
   }
 
@@ -177,7 +193,7 @@ class CommandeService {
   validateCommandeData(data: Partial<Commande>): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    if (!data.productId) {
+    if (!data.productIds) {
       errors.push('L\'ID du produit est requis');
     }
 
@@ -185,9 +201,9 @@ class CommandeService {
       errors.push('La référence est requise');
     }
 
-    if (!data.anneeId) {
-      errors.push('L\'ID de l\'année est requis');
-    }
+    // if (!data._id) {
+    //   errors.push('L\'ID de l\'année est requis');
+    // }
 
     if (data.statu && !['NO', 'PENDING', 'OK'].includes(data.statu)) {
       errors.push('Le statut doit être NO, PENDING ou OK');

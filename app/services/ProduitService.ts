@@ -44,7 +44,7 @@ export interface ProduitWithDetails extends Produit {
 }
 
 class ProduitService {
-  private baseUrl = "https://server.inbtp.net/api/v1";
+  private baseUrl = "http://192.168.1.66:4001/api/v1";
 
   private getAuthHeaders(): HeadersInit {
     const token = "";
@@ -124,7 +124,7 @@ class ProduitService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return [await response.json()];
+      return await response.json();
     } catch (error) {
       console.error("Erreur lors de la récupération du produit par année et section:", error);
       throw error;

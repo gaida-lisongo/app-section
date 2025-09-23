@@ -85,34 +85,34 @@ const Footer = () => {
                   <ul>
                     <li>
                       <a
-                        href="/courses"
+                        href="/researches"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Cours
+                        Recherches
                       </a>
                     </li>
                     <li>
                       <a
-                        href="/seances"
+                        href="/stages"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Séances
+                        Stages
                       </a>
                     </li>
                     <li>
                       <a
-                        href="/travaux"
+                        href="/validation"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Travaux Pratiques
+                        Fiche de validation
                       </a>
                     </li>
                     <li>
                       <a
-                        href="/enseignants"
+                        href="/releves"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Enseignants
+                        Relevés
                       </a>
                     </li>
                   </ul>

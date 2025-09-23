@@ -23,44 +23,7 @@ const menuData: Menu[] = [
     id: 3,
     title: "Etudes",
     newTab: false,
-    submenu: [
-      {
-        id: 30,
-        title: "Enseignements",
-        newTab: false,
-        path: "/studies",
-      },
-      {
-        id: 31,
-        title: "Recherches",
-        newTab: false,
-        path: "/researches",
-      },
-      {
-        id: 32,
-        title: "Stages",
-        newTab: false,
-        path: "/stages",
-      },
-      {
-        id: 33,
-        title: "Enrollements",
-        newTab: false,
-        path: "/enrollements",
-      },
-      {
-        id: 34,
-        title: "Documents",
-        newTab: false,
-        path: "/documents",
-      },
-      // {
-      //   id: 36,
-      //   title: "404",
-      //   newTab: false,
-      //   path: "/error",
-      // },
-    ],
+    path: "/studies"
   },
 
   {

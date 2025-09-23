@@ -30,11 +30,11 @@ const ProductDetailPage = () => {
         // Décoder le slug: anneeId-sectionId
         const [anneeId, sectionId] = slug.split('-');
         
-        if (!anneeId || !sectionId) {
+        if (!anneeId) {
           throw new Error('Format de slug invalide. Attendu: anneeId-sectionId');
         }
         
-        const data = await ProduitService.getProduitByAnneeAndSection(anneeId, sectionId);
+        const data = sectionId ?  await ProduitService.getProduitByAnneeAndSection(anneeId, sectionId) : await ProduitService.getProduit(anneeId);
         console.log("Detail produit:", data);
         setProduits(data);
         

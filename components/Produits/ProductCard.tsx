@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Produit } from "@/app/services/ProduitService";
 import { formatPriceFC } from "@/utils/priceFormatter";
 import { usePanierStore } from "@/store/panierStore";
+import { useAnneeStore, useSectionStore } from "@/store";
 
 interface ProductCardProps {
   produit: Produit;
@@ -21,9 +22,31 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
-  
+  const { section, fetchSection } = useSectionStore();
+  const { annee, fetchAnnee } = useAnneeStore();
   const { ajouterProduit, getItemQuantity } = usePanierStore();
   const quantiteEnPanier = getItemQuantity(produit._id!);
+
+
+  const infoSection = () => {
+    
+    if(section?._id != produit.sectionId) {
+      return (
+        <div>
+          <p>Voir autre section</p>
+        </div>
+      )
+    } 
+    
+    return (
+      <div className="mb-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6" />
+        </svg>
+        <span>{section?.description.designation}</span>
+      </div>
+    )
+  };
 
   const handleAcheter = () => {
     console.log("Achat du produit:", {
@@ -55,8 +78,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
     // Créer le slug au format anneeId-sectionId
     const anneeId = typeof produit.anneeId === 'object' ? produit.anneeId._id : produit.anneeId;
     const sectionId = typeof produit.sectionId === 'object' ? produit.sectionId._id : produit.sectionId;
-    return `${anneeId}-${sectionId}`;
+    return `${produit._id}`;
   };
+
+  useEffect(() => {
+    fetchAnnee(typeof produit.anneeId == "string" ? produit.anneeId : produit.anneeId._id)
+  }, [])
 
   return (
     <motion.div
@@ -92,7 +119,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Badge section/année */}
         <div className="absolute bottom-4 right-4">
           <div className="rounded-lg bg-white/90 px-2 py-1 text-xs font-medium text-gray-800 backdrop-blur-sm">
-            {typeof produit.sectionId === 'object' ? produit.sectionId.description.sigle : produit.sectionId} • {typeof produit.anneeId === 'object' ? `${produit.anneeId.debut}-${produit.anneeId.fin}` : produit.anneeId}
+            Année : {annee?._id ? `${annee?.debut}-${annee?.fin}`: ""}
           </div>
         </div>
       </div>
@@ -105,12 +132,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </h3>
 
         {/* Section et année */}
-        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6" />
-          </svg>
-          <span>{typeof produit.sectionId === 'object' ? produit.sectionId.description.designation : produit.sectionId}</span>
-        </div>
+        {infoSection()}
 
         {/* Bénéfices principaux */}
         {produit.benefice && produit.benefice.length > 0 && (

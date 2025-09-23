@@ -1,5 +1,5 @@
 "use client";
-
+import config from "../../services/config.json";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ProduitService, { Produit } from "@/app/services/ProduitService";
@@ -23,7 +23,9 @@ const ProduitsPage = () => {
       try {
         setLoading(true);
         const data = await ProduitService.getProduits();
-        setAllProduits(data);
+        const filterData = data.filter(item => item.sectionId == config._id);
+
+        setAllProduits(filterData);
       } catch (err) {
         setError('Erreur lors du chargement des produits');
         console.error('Erreur:', err);
