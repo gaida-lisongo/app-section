@@ -58,44 +58,44 @@ const UniteDataTable: React.FC<UniteDataTableProps> = ({ unites, onUniteClick })
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blacksection">
             {unites.map((unite, index) => (
               <motion.tr
-                key={unite._id}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {unite.descripteur?.code || 'N/A'}
+                  {unite && unite.descripteur?.code || 'N/A'}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   <div className="max-w-xs truncate">
-                    {unite.descripteur?.designation || 'Sans titre'}
+                    {unite && unite.descripteur?.designation || 'Sans titre'}
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                    unite.descripteur?.type === 'Obigatoire' 
+                    unite && unite.descripteur?.type === 'Obigatoire' 
                       ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                       : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                   }`}>
-                    {unite.descripteur?.type === 'Obigatoire' ? 'Obligatoire' : 'Optionnelle'}
+                    {unite && unite.descripteur?.type === 'Obigatoire' ? 'Obligatoire' : 'Optionnelle'}
                   </span>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   <div className="flex items-center">
-                    <span className="font-medium">{unite.descripteur?.credit || 0}</span>
-                    <span className="ml-1 text-xs text-gray-500">crédit{(unite.descripteur?.credit || 0) > 1 ? 's' : ''}</span>
+                    <span className="font-medium">{unite && unite.descripteur?.credit || 0}</span>
+                    <span className="ml-1 text-xs text-gray-500">crédit{(unite && unite.descripteur?.credit || 0) > 1 ? 's' : ''}</span>
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   <div className="flex items-center">
-                    <span className="font-medium">{unite.cours?.length || 0}</span>
+                    <span className="font-medium">{unite && unite.cours?.length || 0}</span>
                     <span className="ml-1 text-xs text-gray-500">cours</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                   <div className="max-w-xs truncate">
-                    {unite.descripteur?.mention || 'Non spécifiée'}
+                    {unite && unite.descripteur?.mention || 'Non spécifiée'}
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">

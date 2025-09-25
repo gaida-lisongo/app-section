@@ -1,7 +1,8 @@
+import config from './config.json'
 import { LoginCredentials, LoginResponse, AuthResponse, Etudiant } from "@/types/etudiant";
 
 class EtudiantService {
-    private baseUrl = "http://192.168.1.66:4001/api/v1/etudiant";
+    private baseUrl = config.base_url + "/etudiant";
   
     private getAuthHeaders(): HeadersInit {
       const token = localStorage.getItem('authToken') || localStorage.getItem('token') || "";

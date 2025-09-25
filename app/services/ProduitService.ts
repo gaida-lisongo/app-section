@@ -1,3 +1,4 @@
+import config from "./config.json";
 export interface Produit {
   _id?: string;
   benefice: string[];
@@ -44,7 +45,7 @@ export interface ProduitWithDetails extends Produit {
 }
 
 class ProduitService {
-  private baseUrl = "http://192.168.1.66:4001/api/v1";
+  private baseUrl = config.base_url;
 
   private getAuthHeaders(): HeadersInit {
     const token = "";

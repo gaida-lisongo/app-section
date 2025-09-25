@@ -111,9 +111,9 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
       const checkPayment = await SemestreService.checkPayment(orderNumber);
       console.log("Payment checked:", checkPayment);
       
-      if (checkPayment.status === '1') {
+      if (checkPayment.status === '0') {
         setMessage(checkPayment?.message || 'Paiement en attente');
-      } else if (checkPayment.status === '2') {
+      } else if (checkPayment.status === '1' || checkPayment.status == '2') {
         // Paiement réussi - générer la facture
         await generateInvoice();
         setShowConfirmationModal(false);
@@ -145,7 +145,7 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
 
       // Créer une instance du générateur PDF et générer la facture
       const pdfGenerator = new PDFGeneratorPdfMake();
-      await pdfGenerator.generateCourseInscriptionPDF(invoiceData, qrCodeUrl);
+      await pdfGenerator.generateCourseInscriptionPDF({...invoiceData, annee: selectedCharge.anneeId}, qrCodeUrl);
 
       console.log("Facture générée avec succès");
     } catch (error) {
@@ -523,7 +523,7 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
                                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                     : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                                 }`}>
-                                  {charge.status}
+                                  {charge.anneeId.debut} - {charge.anneeId.fin}
                                 </span>
                               </div>
                             </div>

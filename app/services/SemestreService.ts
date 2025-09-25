@@ -1,5 +1,5 @@
 import { Annee } from "@/types/section";
-
+import config from "./config.json";
 export interface Inscription {
   anneeId: string;
   produitId: string;
@@ -110,7 +110,7 @@ export interface Fiche {
 }
 
 class SemestreService {
-  private baseUrl = "http://192.168.1.66:4001/api/v1/enseignement";
+  private baseUrl = config.base_url + "/enseignement";
 
   private getAuthHeaders(): HeadersInit {
     const token = "";
@@ -210,7 +210,7 @@ class SemestreService {
     try {
       //Recupre les 9 derniers chiffres du numero de telephone et ajout du prefixe 243
       const phone = data.phone.slice(-9).replace(/\D/g, '');
-      const response = await fetch(`http://192.168.1.66:4001/api/v1/payment/fiche/${data.ficheId}`, {
+      const response = await fetch(`${config.base_url}/payment/fiche/${data.ficheId}`, {
         method: "POST",
         headers: this.getAuthHeaders(),
         body: JSON.stringify({
@@ -253,7 +253,7 @@ class SemestreService {
     message?: string;
   }> {
     try {
-      const response = await fetch(`http://192.168.1.66:4001/api/v1/payment/${orderNumber}`, {
+      const response = await fetch(`${config.base_url}/payment/${orderNumber}`, {
         headers: this.getAuthHeaders(),
       });
 

@@ -1,3 +1,4 @@
+import config from "./config.json";
 export interface Commande {
   _id?: string;
   productIds: string[];
@@ -56,7 +57,7 @@ class CommandeService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = 'http://192.168.1.66:4001/api/v1';
+    this.baseUrl = config.base_url;
   }
 
   private getAuthHeaders(): HeadersInit {

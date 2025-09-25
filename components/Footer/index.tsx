@@ -2,9 +2,18 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useSectionStore } from "@/store";
+import { useState } from "react";
 
 const Footer = () => {
   const { section } = useSectionStore();
+  const [data, setData] = useState({
+    matricule: "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Data submited: ", data);
+  };
   return (
     <>
       <footer className="border-t border-stroke bg-white dark:border-strokedark dark:bg-blacksection">
@@ -195,23 +204,27 @@ const Footer = () => {
                   className="animate_top"
                 >
                   <h4 className="mb-9 text-itemtitle2 font-medium text-black dark:text-white">
-                    Checking
+                    Vision resultats
                   </h4>
                   <p className="mb-4 w-[90%]">
-                    Verifier l'autheticité des documents émis par notre section.
+                    {"\t"}* Pour verifier vos resultats entrez votre matricule.
                   </p>
 
-                  <form action="#">
+                  <form action="#" onSubmit={handleSubmit}>
                     <div className="relative">
                       <input
                         type="text"
                         placeholder="Numéro de Reference"
                         className="w-full rounded-full border border-stroke px-6 py-3 shadow-solid-11 focus:border-primary focus:outline-hidden dark:border-strokedark dark:bg-black dark:shadow-none dark:focus:border-primary"
+                        name="matricule"
+                        onChange={(e) => setData({ ...data, matricule: e.target.value })}
+                        value={data.matricule}
                       />
 
                       <button
                         aria-label="signup to newsletter"
                         className="absolute right-0 p-4"
+                        type="submit"
                       >
                         <svg
                           className="fill-[#757693] hover:fill-primary dark:fill-white"

@@ -805,7 +805,7 @@ export class PDFGeneratorPdfMake {
                 { text: 'DEVISE', style: 'tableHeader', alignment: 'center' }
               ],
               [
-                { text: `${invoiceData.course.title} (Credit: ${invoiceData.course.credit})`, style: 'tableCell' },
+                { text: `${invoiceData.course.title} (${invoiceData.annee.debut} - ${invoiceData.annee.fin})`, style: 'tableCell' },
                 { text: invoiceData.payment.amount, style: 'tableCell', alignment: 'center' },
                 { text: invoiceData.payment.currency, style: 'tableCell', alignment: 'center' }
               ]
