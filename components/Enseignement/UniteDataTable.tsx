@@ -57,7 +57,7 @@ const UniteDataTable: React.FC<UniteDataTableProps> = ({ unites, onUniteClick })
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blacksection">
             {unites.map((unite, index) => (
-              <motion.tr
+              unite && <motion.tr
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
