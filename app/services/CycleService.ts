@@ -5,6 +5,7 @@ export interface Classe {
   designation: string;
   description: string;
   semestres: string[]; // IDs des semestres
+  vision?: string;
 }
 
 export interface Cycle {
@@ -128,6 +129,29 @@ class CycleService {
       return await response.json();
     } catch (error) {
       console.error("Erreur lors de la mise à jour du cycle:", error);
+      throw error;
+    }
+  }
+
+  //Mettre à jour une classe
+  async updateVisionClasse({
+    id,
+    vision
+  }: {id: string, vision: string}) : Promise<{success: boolean, message: string, data: Classe}> {
+    try {
+      const response = await fetch(`${this.baseUrl}/cycle/classe/${id}`, {
+        method: "PUT",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ vision }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la classe:", error);
       throw error;
     }
   }
