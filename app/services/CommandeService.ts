@@ -1,3 +1,4 @@
+import { Etudiant } from "@/types/etudiant";
 import config from "./config.json";
 export interface Commande {
   _id?: string;
@@ -46,6 +47,19 @@ export interface CommandeStats {
   }>;
 }
 
+export interface Resultat {
+  _id?: string;
+  classeId?: string;
+  currency?: string;
+  etudiantId?: string;
+  montant?: number;
+  reference?: string;
+  status?: 'NO' | 'PENDING' | 'OK';
+  telephone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
@@ -73,7 +87,7 @@ class CommandeService {
     return headers;
   }
 
-  private async makeRequest(url: string, options: RequestInit = {}): Promise<{status: number, data: any}> {
+  private async makeRequest(url: string, options: RequestInit = {}): Promise<{status: number, message?: string, data: any}> {
     try {
       const response = await fetch(url, {
         headers: {
@@ -120,6 +134,37 @@ class CommandeService {
         nom: referenceData[0],
       }),
     });
+  }
+
+  async createPaymentResultat({
+    matricule,
+    classeId,
+    telephone
+  } : {
+    matricule: string;
+    classeId: string;
+    telephone: string;
+  }): Promise<{success: boolean, message: string, data: {
+    etudiant: Etudiant;
+    resultat: Resultat;
+  }}> {
+    //Recupérer les 9 dernies chifres
+    const phone = telephone?.slice(-9);
+    const url = `${this.baseUrl}/payment/resultat/${encodeURIComponent(classeId)}`;
+    const response = await this.makeRequest(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        telephone: `243${phone}`,
+        matricule,
+      }),
+    });
+
+    const { data } = response;
+    return {
+      success: data.success,
+      message: data.message,
+      data: data.data
+    };
   }
 
   /**

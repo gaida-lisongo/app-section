@@ -1,5 +1,17 @@
 import config from './config.json'
 import { LoginCredentials, LoginResponse, AuthResponse, Etudiant } from "@/types/etudiant";
+import { ResultatResponse } from "@/types/resultat";
+
+export interface Recours {
+    _id?: string;
+    noteId: string;
+    etudiantId: string;
+    object: string;
+    reference?: string;
+    contenu?: string[];
+    status?: "NO" | "PENDING" | "OK";
+    preuve?: string;    
+}
 
 class EtudiantService {
     private baseUrl = config.base_url + "/etudiant";
@@ -165,6 +177,24 @@ class EtudiantService {
             return await response.json();
         } catch (error) {
             console.error("Erreur lors de la récupération des rapports:", error);
+            throw error;
+        }
+    }
+
+    async checkMatricule(matricule: string): Promise<ResultatResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/checking-2/${matricule}`, {
+                method: "GET",
+                headers: this.getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erreur lors de la vérification du matricule:", error);
             throw error;
         }
     }
