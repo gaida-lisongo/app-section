@@ -1,4 +1,4 @@
 {
     "_id": "68c52ec8957f9a89ad8bfc3c",
-    "base_url": "http://192.168.1.67:4001/api/v1"
+    "base_url": "https://server-btp.inbtp.net/api/v1"
 }
