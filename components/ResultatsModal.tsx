@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { X, Download, FileText, BarChart3, GraduationCap, Calendar } from 'lucide-react';
-import { ResultatResponse, SemestreTableData } from '@/types/resultat';
+import { NoteTableRow, ResultatResponse, SemestreTableData } from '@/types/resultat';
 import NotesDataTable from '@/components/NotesDataTable';
 import StatistiquesPanel from '@/components/StatistiquesPanel';
-import { generateBulletinPDF } from '@/utils/bulletinGenerator';
+import { generateBulletinPDF } from '@/utils/bulletinDocumentGenerator';
+import { useSectionStore } from '@/store';
 
 interface ResultatsModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const ResultatsModal: React.FC<ResultatsModalProps> = ({
   const [activeTab, setActiveTab] = useState('semestres');
   const [selectedSemestre, setSelectedSemestre] = useState<string | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { section } = useSectionStore();
 
   if (!isOpen) return null;
 
@@ -50,12 +52,50 @@ const ResultatsModal: React.FC<ResultatsModalProps> = ({
   const handleGeneratePDF = async () => {
     setIsGeneratingPDF(true);
     try {
-      await generateBulletinPDF({
-        etudiant: resultats.data.etudiant,
-        semestres: tableData,
-        statistiquesGlobales: resultats.data.statistiques,
-        dateGeneration: new Date().toLocaleDateString('fr-FR')
-      });
+      if (section) {
+        // Créer un objet resultat minimal pour la génération PDF
+        const resultat = {
+          _id: 'temp-id',
+          status: 'OK' as const,
+          reference: `PDF-${Date.now()}`
+        };
+
+        // Créer un objet classe minimal basé sur les données disponibles
+        const classe = {
+          _id: section._id || 'temp-classe-id',
+          designation: section.description?.designation || 'Classe Non Spécifiée',
+          description: section.description?.objectif || 'Description non disponible',
+          semestres: tableData.map(data => data.semestre._id)
+        };
+
+        // Convertir les tableData en SemestreResultat[]
+        const semestres = tableData.map(data => data.semestre);
+
+        // Créer un objet Etudiant compatible à partir d'EtudiantInfo
+        const etudiant = {
+          ...resultats.data.etudiant,
+          sexe: 'M' as const, // Valeur par défaut
+          nationalite: 'Congolaise',
+          lieu_naissance: 'Non spécifié',
+          date_naissance: '1990-01-01',
+          sectionId: section._id,
+          anneeId: '',
+          secure: '',
+          documents: [],
+          photo: '',
+          semestres: [],
+          __v: 0,
+          solde: 0
+        };
+
+        await generateBulletinPDF(
+          resultat,
+          etudiant,
+          classe,
+          semestres,
+          section
+        );
+      }
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error);
       alert('Erreur lors de la génération du bulletin PDF');
@@ -167,7 +207,7 @@ const ResultatsModal: React.FC<ResultatsModalProps> = ({
                         {data.semestre.designation}
                       </div>
                       <div className="text-sm text-gray-600 mt-1">
-                        {data.notes.length} cours • {data.statistiques.creditsValides}/{data.statistiques.totalCredits} crédits
+                        {data?.notes?.length} cours • {data.statistiques.creditsValides}/{data.statistiques.totalCredits} crédits
                       </div>
                       <div className="text-sm text-blue-600 mt-1">
                         Moyenne: {data.statistiques.moyenneGenerale.toFixed(2)}/20
@@ -182,6 +222,9 @@ const ResultatsModal: React.FC<ResultatsModalProps> = ({
                 <div>
                   <NotesDataTable 
                     data={getSemestreData(selectedSemestre)!}
+                    showRecours={false}
+                    onShowRecours={(showRecours: boolean) => console.log(showRecours)}
+                    renderRecours={(note: NoteTableRow) => <div>{note._id}</div>}
                   />
                 </div>
               )}
@@ -263,7 +306,7 @@ const ResultatsModal: React.FC<ResultatsModalProps> = ({
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <span className="text-gray-600">Cours:</span>
-                        <span className="ml-2 font-medium">{data.notes.length}</span>
+                        <span className="ml-2 font-medium">{data.notes?.length}</span>
                       </div>
                       <div>
                         <span className="text-gray-600">Crédits:</span>

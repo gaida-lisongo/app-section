@@ -65,11 +65,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated } = useUserAuthStore();
   useEffect(() => {
 
-    if (!isAuthenticated) {
-      console.log("Utilisateur non authentifié, redirection vers l'inscription");
-    } else {
+    if (isAuthenticated) {
       console.log("Utilisateur authentifié, redirection vers le dashboard");
       router.push('/dashboard');
+    } else {
+      console.log("Utilisateur non authentifié, redirection vers l'inscription");
+      <Signin />;
     }
   }, [router]);
 

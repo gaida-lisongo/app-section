@@ -104,7 +104,6 @@ const FunFact = () => {
               {section?.description?.motChef?.description}
             </p>
           </motion.div>
-
           {/* <div className="flex flex-wrap justify-center gap-8 lg:gap-42.5">
             <motion.div
               variants={{
