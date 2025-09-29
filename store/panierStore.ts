@@ -125,7 +125,7 @@ export const usePanierStore = create<PanierStore>()(
       // Actions checkout
       setCheckoutData: async (data: CheckoutData) => {
         const { status, data: commande } = await CommandeService.createCommande({
-          productIds: get().items.map((item) => item.produit._id).filter(id => id !== undefined),
+          productIds: get().items.map((item) => item.produit._id).filter((id): id is string => id !== undefined),
           statu: 'NO',
           reference: CommandeService.generateReference('CMD'),
           matricule: '', // Sera rempli dans le CheckoutModal

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -11,7 +11,32 @@ import ResultatsSidebar from '../../../components/ResultatsSidebar';
 import ResultatsContent from '../../../components/ResultatsContent';
 import PaymentProtection from '../../../components/Payment/PaymentProtection';
 
-const ResultatPage = () => {
+// Composant de fallback pour le loading
+const ResultatPageSkeleton = () => (
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+    <div className="w-full max-w-md">
+      <div className="text-center mb-8">
+        <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
+      </div>
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-6 bg-gray-200 rounded animate-pulse w-1/2"></div>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse mb-2 w-1/4"></div>
+            <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ResultatPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [matricule, setMatricule] = useState('');
@@ -260,6 +285,15 @@ const ResultatPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// Composant principal avec Suspense
+const ResultatPage = () => {
+  return (
+    <Suspense fallback={<ResultatPageSkeleton />}>
+      <ResultatPageContent />
+    </Suspense>
   );
 };
 

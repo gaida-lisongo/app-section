@@ -9,7 +9,7 @@ const PaymentModal = ({
 }) => {
     return (
         <div>
-            <h2></h2>
+            <h2>Payment Modal</h2>
         </div>
     );
 };
