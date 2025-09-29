@@ -105,7 +105,7 @@ const FunFact = () => {
             </p>
           </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-8 lg:gap-42.5">
+          {/* <div className="flex flex-wrap justify-center gap-8 lg:gap-42.5">
             <motion.div
               variants={{
                 hidden: {
@@ -175,7 +175,7 @@ const FunFact = () => {
               </h3>
               <p className="text-lg lg:text-para2">Cours</p>
             </motion.div>
-          </div>
+          </div> */}
         </div>
       </section>
       {/* <!-- ===== Funfact End ===== --> */}
