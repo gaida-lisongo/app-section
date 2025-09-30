@@ -41,6 +41,8 @@ const ECUEList: React.FC<ECUEListProps> = ({ semestres } : ECUEListProps) => {
   const [selectedCours, setSelectedCours] = useState<CoursInscrit | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
+  console.log("Current cours: ", selectedCours);
+
   // Extraire tous les cours auxquels l'étudiant est inscrit (avec fiche de cotation)
   const coursInscrits = useMemo(() => {
     const cours: CoursInscrit[] = [];
@@ -127,10 +129,6 @@ const ECUEList: React.FC<ECUEListProps> = ({ semestres } : ECUEListProps) => {
     setShowDetail(false);
     setSelectedCours(null);
   };
-
-  console.log("Data semestres student :", semestres);
-  console.log("Cours inscrits :", coursInscrits);
-  console.log("Cours filtrés :", filteredCours);
 
   // Si on affiche le détail d'un cours
   if (showDetail && selectedCours) {

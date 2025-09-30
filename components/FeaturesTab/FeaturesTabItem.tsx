@@ -22,21 +22,15 @@ const FeaturesTabItem = ({ featureTab, id }: { featureTab: FeatureTab, id: strin
 
   } = useUserAuthStore();
 
-  const renderEnseignement = () => {
-    console.log("Data semestres student :", mySemestres);
+  const renderEnseignement = () => {;
     return <ECUEList semestres={mySemestres} />
   }
 
   const renderRecherche = () => {
-    console.log("Data stages student :", myStages);
-    console.log("Data recherches student :", myRecherches);
     return <ProduitRapportList etudiantId={etudiant?._id || ""} produits={[...myRecherches, ...myStages]} />  
   }
 
   const renderDocument = () => {
-    console.log("Data validatios student :", myValidations);
-    console.log("Data releves student :", myReleves);
-    console.log("Data sessions student :", mySessions);
     return <FAQ produits={[...myValidations, ...myReleves, ...mySessions]} />
   }
 
