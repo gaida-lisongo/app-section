@@ -133,7 +133,9 @@ export class PDFGeneratorPdfMake {
             // Qr code de etdudiant._id,
             {
               width: "auto",
-              stack: [
+              stack: etudiant?.photo ? {
+                image: 'profile'
+              } : [
                 { text: `${section?.description.designation || 'Non définie'}`, alignment: 'center', margin: [0, 0, 0, 10] },
                 {
                   qr: `https://server.inbtp.net/api/v1/etudiant/${etudiant._id ?? etudiant.matricule}/details`,
@@ -241,6 +243,10 @@ export class PDFGeneratorPdfMake {
           ]
         }
       ],
+
+      images: {
+        profile: `${etudiant?.photo && ''}`
+      },
       
       styles: {
         header: {
@@ -306,6 +312,8 @@ export class PDFGeneratorPdfMake {
         }
       }
     };
+
+
     
     // Générer et télécharger le PDF
     pdfMake.createPdf(docDefinition).download(`Inscription_${etudiant.matricule}.pdf`);
