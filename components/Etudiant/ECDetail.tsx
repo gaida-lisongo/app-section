@@ -274,17 +274,22 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                               <p className="text-sm text-gray-500">
                                 Année: {typeof travail.anneeId === 'object' ? travail.anneeId.debut + ' - ' + travail.anneeId.fin : travail.anneeId}
                               </p>
-                              {travail.questionnaire && (
+                              {/* {travail.questionnaire && (
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{travail.questionnaire}</p>
-                              )}
+                              )} */}
                             </div>
                           </div>
                           <div className="flex items-center space-x-3">
                             {getStatusBadge(travail.status)}
-                            <button className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white">
+                            <a 
+                              className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white"
+                              href={`/produits/${typeof travail.produitId == "object" ? travail.produitId?._id : typeof travail?.questionnaire}`}
+
+                              target='_blank'
+                            >
                               <FileText className="w-4 h-4 mr-1" />
                               Voir détails
-                            </button>
+                            </a>
                           </div>
                         </div>
                       </div>
