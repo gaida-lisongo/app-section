@@ -54,9 +54,31 @@ interface Section {
 }
 
 export class PDFGeneratorPdfMake {
+
+  async profileUrl (url: string) {
+    try {
+      const response = await fetch(url);
+
+      if(response.ok){
+        const photoBlob = await response.blob();
+        const photoBase64  = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(photoBlob);
+        });
+        console.log("Photo to base64: ", url);
+        return photoBase64;
+      }
+    } catch (error) {
+      return '';
+    }
+  }
   
   async generateInscriptionPDF(etudiant: Etudiant, section?: Section): Promise<void> {
     console.log("Génération du PDF pour l'étudiant:", etudiant);
+
+    const photoUrl = await this.profileUrl(`${etudiant?.photo}`);
     const docDefinition : any = {
       pageSize: 'A4',
       pageMargins: [40, 40, 40, 40],
@@ -133,9 +155,10 @@ export class PDFGeneratorPdfMake {
             // Qr code de etdudiant._id,
             {
               width: "auto",
-              stack: etudiant?.photo ? {
-                image: 'profile'
-              } : [
+              stack: etudiant?.photo ? [{
+                image: 'profile',
+                fit: [150, 150]
+              }] : [
                 { text: `${section?.description.designation || 'Non définie'}`, alignment: 'center', margin: [0, 0, 0, 10] },
                 {
                   qr: `https://server.inbtp.net/api/v1/etudiant/${etudiant._id ?? etudiant.matricule}/details`,
@@ -245,7 +268,7 @@ export class PDFGeneratorPdfMake {
       ],
 
       images: {
-        profile: `${etudiant?.photo && ''}`
+        profile: photoUrl
       },
       
       styles: {
