@@ -2,7 +2,6 @@
 
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     domains: ["localhost"],
     remotePatterns: [
@@ -17,6 +16,13 @@ const nextConfig = {
         port: "",
       },
     ],
+  },
+  // Configuration pour éviter les problèmes de résolution de modules
+  webpack: (config, { isServer }) => {
+    // Forcer la résolution des extensions TypeScript
+    config.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.json'];
+    
+    return config;
   },
 };
 

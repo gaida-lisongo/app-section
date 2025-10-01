@@ -1,5 +1,5 @@
 import Service from "./Service";
-import config from "./config.json";
+import config from "./config";
 import { Etudiant } from "@/types/etudiant";
 
 class HomeService extends Service {

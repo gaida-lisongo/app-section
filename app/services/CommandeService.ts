@@ -1,5 +1,5 @@
 import { Etudiant } from "@/types/etudiant";
-import config from "./config.json";
+import config from "./config";
 export interface Commande {
   _id?: string;
   productIds: string[];

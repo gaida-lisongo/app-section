@@ -1,4 +1,4 @@
-import config from './config.json'
+import config from './config'
 import { LoginCredentials, LoginResponse, AuthResponse, Etudiant } from "@/types/etudiant";
 import { ResultatResponse } from "@/types/resultat";
 
@@ -184,6 +184,24 @@ class EtudiantService {
     async checkMatricule(matricule: string): Promise<ResultatResponse> {
         try {
             const response = await fetch(`${this.baseUrl}/checking-2/${matricule}`, {
+                method: "GET",
+                headers: this.getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erreur lors de la vérification du matricule:", error);
+            throw error;
+        }
+    }
+
+    async checkProduct(productId: string, matricule: string): Promise<{success: boolean; message: string; data: any}> {
+        try {
+            const response = await fetch(`${this.baseUrl}/checkProduct/${matricule}/${productId}`, {
                 method: "GET",
                 headers: this.getAuthHeaders(),
             });

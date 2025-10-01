@@ -17,8 +17,12 @@ import {
   Download,
   ExternalLink,
   GraduationCap,
-  User
+  User,
+  Loader2
 } from 'lucide-react';
+import EtudiantService from '@/app/services/EtudiantService';
+import CommandeVerificationService from '@/app/services/CommandeVerificationService';
+import PresenceConfirmationModal from './PresenceConfirmationModal';
 
 interface ECDetailProps {
   cours: Cours;
@@ -29,7 +33,11 @@ interface ECDetailProps {
 
 const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'seances' | 'travaux' | 'ressources'>('overview');
-
+  const [checkingTravail, setCheckingTravail] = useState<string | null>(null);
+  const [showPresenceModal, setShowPresenceModal] = useState(false);
+  const [selectedSeance, setSelectedSeance] = useState<any>(null);
+  const [presenceData, setPresenceData] = useState<any>(null);
+  console.log("Cours Detail : ", cours);
   const getStatusBadge = (status: 'PENDING' | 'OK' | 'NO') => {
     switch (status) {
       case 'OK':
@@ -51,6 +59,94 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
     { id: 'ressources', label: 'Ressources', icon: Download }
   ];
 
+  // Fonction pour formater le texte en liste basée sur \n
+  const formatTextWithLineBreaks = (text: string) => {
+    console.log("Current text : ", text);
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    console.log("Detail lignes :", lines);
+
+    if (lines.length <= 1) {
+      return <span>{text}</span>;
+    }
+    
+    return (
+      <>
+        {lines.map((line, index) => (
+          <p key={index} className="text-sm">
+            {line.trim()}
+          </p>
+        ))}
+      </>
+    );
+  };
+
+  const checkTravail = async (travail: any) => {
+    const produitId = typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId;
+    
+    if (!produitId) {
+      console.error("Aucun produitId trouvé pour ce travail");
+      return;
+    }
+
+    setCheckingTravail(produitId);
+
+    try {
+      await CommandeVerificationService.checkCommandeWithStoredMatricule(produitId, {
+        onSuccess: (hasCommande, data) => {
+          if (hasCommande) {
+            // Si l'étudiant a commandé le produit, rediriger vers le questionnaire
+            window.open(`${travail?.questionnaire}`, '_blank');
+          } else {
+            // Si l'étudiant n'a pas commandé le produit, rediriger vers la page produit
+            window.open(`/produits/${produitId}`, '_blank');
+          }
+        },
+        onError: (error) => {
+          console.error("Erreur lors de la vérification du travail:", error);
+          // En cas d'erreur, rediriger vers la page produit par défaut
+          window.open(`/produits/${produitId}`, '_blank');
+        },
+        redirections: {
+          error: `/produits/${produitId}`
+        }
+      });
+    } catch (error) {
+      console.error("Erreur lors de la vérification du travail:", error);
+      // En cas d'erreur, rediriger vers la page produit par défaut
+      window.open(`/produits/${produitId}`, '_blank');
+    } finally {
+      setCheckingTravail(null);
+    }
+  }
+
+  const checkSeance = async (seance: {
+    _id: string,
+    status: 'PENDING' | 'NO' | 'OK',
+    produitId: string,
+    anneeId: string
+  }) => {
+    console.log("Current :", seance)
+    try {
+      await CommandeVerificationService.checkCommandeWithStoredMatricule(seance.produitId, {
+        onSuccess: (hasCommande, data)=>{
+          if (hasCommande) {
+            // Afficher la modal de confirmation de présence
+            setSelectedSeance(seance);
+            setPresenceData(data);
+            setShowPresenceModal(true);
+          } else {
+            // Si l'étudiant n'a pas commandé le produit, rediriger vers la page produit
+            window.open(`/produits/${seance?.produitId}`, '_blank');
+          }
+        },
+        onError: (error) => {
+          console.error("Info error :", error);
+        }
+      });
+    } catch (error) {
+      console.error("Error occured : ", error)
+    }
+  }
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-blacksection">
       {/* Header */}
@@ -115,7 +211,9 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
             <div className="bg-white dark:bg-blacksection rounded-lg shadow-sm border border-gray-200 dark:border-strokedark">
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Description du cours</h3>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{cours.description}</p>
+                <div className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {formatTextWithLineBreaks(cours.description)}
+                </div>
               </div>
             </div>
 
@@ -196,14 +294,15 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                         <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                           Module {index + 1} - {typeof module.anneeId === 'object' ? module.anneeId.debut + ' - ' + module.anneeId.fin : module.anneeId}
                         </h4>
-                        <ul className="space-y-1">
+                        <div className="space-y-3">
                           {module.contenu.map((item, itemIndex) => (
-                            <li key={itemIndex} className="text-sm text-gray-600 dark:text-gray-300 flex items-start">
-                              <span className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                              {item}
-                            </li>
+                            <div key={itemIndex} className="text-gray-600 dark:text-gray-300">
+                              <div className="leading-relaxed">
+                                {formatTextWithLineBreaks(item)}
+                              </div>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -238,7 +337,15 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                           </div>
                           <div className="flex items-center space-x-3">
                             {getStatusBadge(seance.status)}
-                            <button className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white">
+                            <button 
+                              className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white"
+                              onClick={() => checkSeance(seance as {
+                                _id: string,
+                                status: 'PENDING' | 'NO' | 'OK',
+                                produitId: string,
+                                anneeId: string
+                              })}
+                            >
                               <Play className="w-4 h-4 mr-1" />
                               Rejoindre
                             </button>
@@ -281,15 +388,18 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                           </div>
                           <div className="flex items-center space-x-3">
                             {getStatusBadge(travail.status)}
-                            <a 
-                              className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white"
-                              href={`/produits/${travail.produitId}`}
-
-                              target='_blank'
+                            <button 
+                              className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                              onClick={() => checkTravail(travail)}
+                              disabled={checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId)}
                             >
-                              <FileText className="w-4 h-4 mr-1" />
-                              Voir détails
-                            </a>
+                              {checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId) ? (
+                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                              ) : (
+                                <FileText className="w-4 h-4 mr-1" />
+                              )}
+                              {checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId) ? 'Vérification...' : 'Voir détails'}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -356,6 +466,19 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
           </div>
         )}
       </div>
+
+      {/* Modal de confirmation de présence */}
+      <PresenceConfirmationModal
+        isOpen={showPresenceModal}
+        onClose={() => {
+          setShowPresenceModal(false);
+          setSelectedSeance(null);
+          setPresenceData(null);
+        }}
+        seance={selectedSeance}
+        coursTitle={cours.titre}
+        data={presenceData}
+      />
     </div>
   );
 };

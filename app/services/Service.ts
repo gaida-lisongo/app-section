@@ -1,4 +1,4 @@
-import config from "./config.json";
+import config from "./config";
 import { Response, Section, Annee } from "../../types/section";
 
 interface Service {

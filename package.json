@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify-config": "node scripts/verify-config.js",
+    "clean-cache": "node scripts/clean-cache.js",
+    "setup-env": "node scripts/setup-env.js",
+    "setup": "npm run setup-env && npm run verify-config && npm run clean-cache"
   },
   "dependencies": {
     "@types/pdfmake": "^0.2.11",

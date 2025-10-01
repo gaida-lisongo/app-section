@@ -1,5 +1,5 @@
 import { Annee } from "@/types/section";
-import config from "./config.json";
+import config from "./config";
 export interface Inscription {
   anneeId: string;
   produitId: string;

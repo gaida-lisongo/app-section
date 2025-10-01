@@ -1,5 +1,5 @@
 "use client";
-import config from "../../services/config.json";
+import config from "@/app/services/config";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ProduitService, { Produit } from "@/app/services/ProduitService";
