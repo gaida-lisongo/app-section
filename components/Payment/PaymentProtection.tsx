@@ -16,6 +16,7 @@ const PaymentProtection = ({ children, matricule, orderNumber }: PaymentProtecti
   const [isVerifying, setIsVerifying] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mesage, setMesage] = useState<string | null>("Vérification en cours...");
 
   const matriculeToCheck = searchParams.get('matricule');
 
@@ -33,11 +34,15 @@ const PaymentProtection = ({ children, matricule, orderNumber }: PaymentProtecti
         // Vérifier le statut du paiement
         const response = await TransactionService.checkPayment(orderNumber);
         console.log("==========CHECKING PAYMENT STATUS==========", response);
-        if (response.data.success) {
+        if (response.data.data.status === '0') {
           setHasAccess(true);
+          setMesage("Accès autorisé");
         } else {
+          setMesage("Accès non autorisé");
           // Rediriger vers la page de paiement si pas d'accès
-          router.push(`/payment?matricule=${matriculeToCheck}`);
+          setTimeout(() => {
+            router.push(`/payment?matricule=${matriculeToCheck}`);
+          }, 3000);
         }
       } catch (error) {
         console.error('Erreur lors de la vérification du paiement:', error);
@@ -66,7 +71,7 @@ const PaymentProtection = ({ children, matricule, orderNumber }: PaymentProtecti
             Vérification en cours...
           </h2>
           <p className="text-gray-600">
-            Vérification de votre accès aux résultats
+            {mesage}
           </p>
         </div>
       </div>

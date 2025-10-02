@@ -136,7 +136,7 @@ export class PDFGeneratorPdfMake {
               stack: [
                 { text: `${section?.description.designation || 'Non définie'}`, alignment: 'center', margin: [0, 0, 0, 10] },
                 {
-                  qr: `https://server.inbtp.net/api/v1/etudiant/${etudiant._id ?? etudiant.matricule}/details`,
+                  qr: `${process.env.NEXT_PUBLIC_API_BASE_URL}/etudiant/${etudiant._id ?? etudiant.matricule}/details`,
                   fit: 100,
                   alignment: 'center'
                 },
@@ -315,7 +315,7 @@ export class PDFGeneratorPdfMake {
     console.log("Génération de la facture pour le paiement:", paymentData);
     
     const currentDate = new Date();
-    const qrCodeUrl = `http://localhost:4001/payment/${paymentData.reference}`;
+    const qrCodeUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/${paymentData.reference}`;
     
     const docDefinition: any = {
       pageSize: 'A4',

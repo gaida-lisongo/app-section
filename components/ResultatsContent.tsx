@@ -292,8 +292,8 @@ const ResultatsContent: React.FC<ResultatsContentProps> = ({
     try {
       // Vérifier le paiement avec la référence du recours
       const paymentResponse = await TransactionService.checkPayment(recoursData.reference || '');
-      
-      if (paymentResponse.data.success) {
+      console.log("Payment response:", paymentResponse);
+      if (paymentResponse.data.data.status == '0') {
         setRecoursStep(3);
       } else {
         alert('Paiement non confirmé. Veuillez effectuer le paiement avant de continuer.');

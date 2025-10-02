@@ -29,9 +29,8 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
   const [message, setMessage] = useState('Vérifiez vos informations avant de confirmer');
 
   // Fonction utilitaire pour créer des clés uniques
-  const createUniqueKey = (prefix: string, index: number, content?: string) => {
-    const contentHash = content ? content.slice(0, 20).replace(/\s+/g, '-') : '';
-    return `${prefix}-${index}-${contentHash}`;
+  const createUniqueKey = (prefix: string, index: number) => {
+    return `${prefix}-${index}-${Date.now()}`;
   };
 
   useEffect(() => {
@@ -111,9 +110,9 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
       const checkPayment = await SemestreService.checkPayment(orderNumber);
       console.log("Payment checked:", checkPayment);
       
-      if (checkPayment.status === '0') {
+      if (checkPayment.status == '2') {
         setMessage(checkPayment?.message || 'Paiement en attente');
-      } else if (checkPayment.status === '1' || checkPayment.status == '2') {
+      } else if (checkPayment.status == '0') {
         // Paiement réussi - générer la facture
         await generateInvoice();
         setShowConfirmationModal(false);
@@ -275,7 +274,7 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
                   <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
                     <ul className="space-y-2">
                       {cours.plan.map((item, index) => (
-                        <li key={createUniqueKey('plan', index, item)} className="flex items-start gap-2">
+                        <li key={createUniqueKey('plan', index)} className="flex items-start gap-2">
                           <span className="mt-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs font-medium text-white">
                             {index + 1}
                           </span>
@@ -296,7 +295,7 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
                   <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
                     <ul className="space-y-2">
                       {cours.contenu.map((item, index) => (
-                        <li key={createUniqueKey('contenu', index, item)} className="flex items-start gap-2">
+                        <li key={createUniqueKey('contenu', index)} className="flex items-start gap-2">
                           <div className="mt-1.5 h-2 w-2 rounded-full bg-green-500"></div>
                           <span className="text-gray-700 dark:text-gray-300">{item}</span>
                         </li>
@@ -315,7 +314,7 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
                   <div className="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
                     <ul className="space-y-2">
                       {cours.repartition.map((item, index) => (
-                        <li key={createUniqueKey('repartition', index, item)} className="flex items-start gap-2">
+                        <li key={createUniqueKey('repartition', index)} className="flex items-start gap-2">
                           <div className="mt-1.5 h-2 w-2 rounded-full bg-purple-500"></div>
                           <span className="text-gray-700 dark:text-gray-300">{item}</span>
                         </li>
@@ -334,7 +333,7 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
                   <div className="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
                     <ul className="space-y-2">
                       {cours.penalites.map((item, index) => (
-                        <li key={createUniqueKey('penalites', index, item)} className="flex items-start gap-2">
+                        <li key={createUniqueKey('penalites', index)} className="flex items-start gap-2">
                           <div className="mt-1.5 h-2 w-2 rounded-full bg-red-500"></div>
                           <span className="text-gray-700 dark:text-gray-300">{item}</span>
                         </li>
@@ -353,7 +352,7 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
                   <div className="rounded-lg bg-orange-50 p-4 dark:bg-orange-900/20">
                     <ul className="space-y-2">
                       {cours.plagiat.map((item, index) => (
-                        <li key={createUniqueKey('plagiat', index, item)} className="flex items-start gap-2">
+                        <li key={createUniqueKey('plagiat', index)} className="flex items-start gap-2">
                           <div className="mt-1.5 h-2 w-2 rounded-full bg-orange-500"></div>
                           <span className="text-gray-700 dark:text-gray-300">{item}</span>
                         </li>

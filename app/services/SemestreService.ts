@@ -299,7 +299,7 @@ class SemestreService {
       }
 
       // Construire l'URL du QR code pour vérifier le paiement
-      const qrCodeUrl = `http://192.168.1.66:4001/api/v1/payment/${data.orderNumber}`;
+      const qrCodeUrl = `${config.base_url}/semestre/${data.orderNumber}`;
 
       // Préparer les données de la facture
       const invoiceData = {

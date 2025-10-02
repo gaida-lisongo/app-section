@@ -222,17 +222,17 @@ const NotesDataTable: React.FC<NotesDataTableProps> = ({ data, showRecours, onSh
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-center">
                   <span className="text-sm text-gray-900">
-                    {note.cmi !== null ? note.cmi.toFixed(2) : '-'}
+                    {note.cmi !== null ? note?.cmi?.toFixed(2) : '-'}
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-center">
                   <span className="text-sm text-gray-900">
-                    {note.examen !== null ? note.examen.toFixed(2) : '-'}
+                    {note.examen !== null ? note?.examen?.toFixed(2) : '-'}
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-center">
                   <span className="text-sm text-gray-900">
-                    {note.rattrapage !== null ? note.rattrapage.toFixed(2) : '-'}
+                    {note.rattrapage !== null ? note?.rattrapage?.toFixed(2) : '-'}
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-center">

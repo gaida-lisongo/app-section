@@ -10,7 +10,7 @@ interface Config {
 // Configuration par défaut
 const defaultConfig: Config = {
   _id: "68c52ec8957f9a89ad8bfc3c",
-  base_url: "https://server-nathan-cyan.vercel.app/api/v1"
+  base_url: "https://server-he.he-section.site/api/v1"
 };
 
 // Charger la configuration depuis les variables d'environnement
