@@ -1,4 +1,4 @@
 {
     "_id": "68c86a1bdc560409876c4b01",
-    "base_url": "https://server-btp.inbtp.net/api/v1"
+    "base_url": "http://localhost:4011/api/v1"
 }
