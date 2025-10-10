@@ -86,7 +86,9 @@ class CycleService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log("Cycles de la section:", data);
+      return data;
     } catch (error) {
       console.error("Erreur lors de la récupération des cycles de la section:", error);
       throw error;

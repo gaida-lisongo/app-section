@@ -2,9 +2,23 @@
 
 import { Cycle } from "@/app/services/CycleService"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname } from "next/navigation";
+import CycleService from "@/app/services/CycleService";
+import SectionLoader from "@/components/Common/SectionLoader";
 
-const SideBar = ( {cyclesData } : { cyclesData: Cycle[] } ) => {
+const SideBar = () => {
+  const [cyclesData, setCycleData] = useState<Cycle[]>([])
+  useEffect(() => {
+    const fetchCycles = async () => {
+        const data : Cycle[] = await CycleService.getCyclesBySection();
+        setCycleData(data)
+    }
+    fetchCycles()
+  },[])
+
+    if(!cyclesData) return <SectionLoader
+      title="Chargement des cycles..."
+    />;
     const [activeClasseId, setActiveClasseId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const pathname = usePathname();

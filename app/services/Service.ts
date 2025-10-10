@@ -11,6 +11,7 @@ class Service implements Service {
 
     constructor() {
         this._id = config._id;
+        console.log("Current Id of section : ", this._id);
     }
 
     async fetchSection() : Promise<Section | null> {
