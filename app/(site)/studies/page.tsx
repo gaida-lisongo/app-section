@@ -1,7 +1,5 @@
 import ClyclePage from "@/components/Enseignement";
 import { Metadata } from "next";
-import CycleService from "@/app/services/CycleService";
-
 export const metadata: Metadata = {
   title: "Enseignements | Plateforme de Renforcement Académique",
 
@@ -9,11 +7,10 @@ export const metadata: Metadata = {
   description: "Découvrez nos programmes d'enseignement personnalisés pour le renforcement académique. Cours de soutien, méthodologie et accompagnement pédagogique.",
 };
 
-const StudiesPage = async () => {
-  const cyclesData = await CycleService.getCyclesBySection();
+const StudiesPage = () => {
   return (
     <>
-        <ClyclePage cycles={cyclesData}/>
+        <ClyclePage />
     </>
   );
 };

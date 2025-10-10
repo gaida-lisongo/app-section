@@ -6,9 +6,12 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import CycleTabs from "./CycleTabs";
 import SectionLoader from "../Common/SectionLoader";
+import CycleService from "@/app/services/CycleService";
 
-const ClyclePage = ({ cycles } : { cycles: Cycle[] }) => {
+
+const ClyclePage = () => {
   const { section, loading, fetchSection } = useSectionStore();
+  const [cycles, setCycles] = useState<Cycle[]>([])
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -17,6 +20,11 @@ const ClyclePage = ({ cycles } : { cycles: Cycle[] }) => {
   }, [fetchSection]);
 
   useEffect(() => {
+    const fetchCycles = async () => {
+      const cyclesData = await CycleService.getCyclesBySection();
+      setCycles(cyclesData)
+    }
+    fetchCycles()
     console.log("Cycle data: ", cycles);
     console.log("Section data : ", section); 
   }, [section, cycles]);
