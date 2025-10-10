@@ -1,15 +1,16 @@
 "use client"
 import { Cycle } from "@/app/services/CycleService";
-import RelatedPost from "@/components/Blog/RelatedPost";
 import { useSectionStore } from "@/store";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import CycleTabs from "./CycleTabs";
 import SectionLoader from "../Common/SectionLoader";
+import CycleService from "@/app/services/CycleService";
 
-const ClyclePage = ({ cycles } : { cycles: Cycle[] }) => {
+
+const ClyclePage = () => {
   const { section, loading, fetchSection } = useSectionStore();
   const [isClient, setIsClient] = useState(false);
+  const [cycles, setCycles] = useState<Cycle[]>([])
 
   useEffect(() => {
     setIsClient(true);
@@ -17,9 +18,12 @@ const ClyclePage = ({ cycles } : { cycles: Cycle[] }) => {
   }, [fetchSection]);
 
   useEffect(() => {
-    console.log("Cycle data: ", cycles);
-    console.log("Section data : ", section); 
-  }, [section, cycles]);
+    const fetchCycles = async () => {
+      const cyclesData = await CycleService.getCyclesBySection();
+      setCycles(cyclesData)
+    }
+    fetchCycles()
+  }, [section]);
 
   // Prevent hydration mismatch by only showing loading state on client
   if (!isClient) {

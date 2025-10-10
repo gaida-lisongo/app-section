@@ -1,6 +1,4 @@
 import { Metadata } from "next";
-import CycleService from "@/app/services/CycleService";
-import SectionLoader from "@/components/Common/SectionLoader";
 import SideBar from "@/components/Enseignement/SideBar";
 
 export const metadata: Metadata = {
@@ -16,17 +14,12 @@ export default async function StudiesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cyclesData = await CycleService.getCyclesBySection();
-
-  if(!cyclesData) return <SectionLoader
-    title="Chargement des cycles..."
-  />;
   return (
     <div className="min-h-screen">
         <section className="pb-20 pt-35 lg:pb-25 lg:pt-45 xl:pb-30 xl:pt-50">
             <div className="mx-auto max-w-c-1390 px-4 md:px-8 2xl:px-0">
                 <div className="flex flex-col-reverse gap-7.5 lg:flex-row xl:gap-12.5">
-                    <SideBar cyclesData={cyclesData} />
+                    <SideBar />
                     {children}
                 </div>
             </div>    

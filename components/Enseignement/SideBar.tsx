@@ -2,13 +2,23 @@
 
 import { Cycle } from "@/app/services/CycleService"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname } from "next/navigation";
+import CycleService from "@/app/services/CycleService";
+import SectionLoader from "@/components/Common/SectionLoader";
 
-const SideBar = ( {cyclesData } : { cyclesData: Cycle[] } ) => {
+const SideBar = () => {
+    const [cyclesData, setCyclesData] = useState<Cycle[]>([])
     const [activeClasseId, setActiveClasseId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const pathname = usePathname();
 
+    useEffect(()=>{
+        const fetchCycles = async () => {
+            const data = await CycleService.getCyclesBySection();
+            setCyclesData(data)
+        }
+        fetchCycles()
+    }, [])
     // Effet pour détecter l'URL actuelle et mettre à jour l'élément actif
     useEffect(() => {
         const pathSegments = pathname.split('/');
@@ -23,6 +33,8 @@ const SideBar = ( {cyclesData } : { cyclesData: Cycle[] } ) => {
         }
     }, [pathname, cyclesData]);
 
+    
+
     const handleClasseClick = (classeId: string) => {
         setActiveClasseId(classeId);
     };
@@ -33,6 +45,10 @@ const SideBar = ( {cyclesData } : { cyclesData: Cycle[] } ) => {
             classe.designation.toLowerCase().includes(searchTerm.toLowerCase())
         ) || []
     ) || [];
+
+    if(!cyclesData) return <SectionLoader
+      title="Chargement des cycles..."
+    />;
     return (
         <div className="md:w-1/2 lg:w-1/5">
             <div className="animate_top mb-10 rounded-md border border-stroke bg-white p-3.5 shadow-solid-13 dark:border-strokedark dark:bg-blacksection">
