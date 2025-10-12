@@ -9,16 +9,28 @@ import SectionLoader from '@/components/Common/SectionLoader';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import SemestreDetail from '@/components/Enseignement/SemestreDetail';
+import { useAnneeStore } from '../../../../store/anneeStore';
+import { Annee } from '@/types/section';
+import InscriptionModal from '@/components/Modal/InscriptionModal';
+import InscriptionSuccessModal from '@/components/Modal/InscriptionSuccessModal';
+import EtudiantService from '@/app/services/EtudiantService';
+import { Etudiant } from '@/types/etudiant';
 
 const ProgramPage = () => {
     const params = useParams();
     const slug = params.slug as string;
     const { section } = useSectionStore();
-    
+    const { annees, fetchAnnees, loading : loadingAnnee } = useAnneeStore();
     const [classe, setClasse] = useState<Classe | null>(null);
     const [cycle, setCycle] = useState<Cycle | null>(null);
     const [semestres, setSemestres] = useState<SemestreWithUnites[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showInscriptionModal, setShowInscriptionModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [inscriptionData, setInscriptionData] = useState<{
+        etudiant: Etudiant;
+        parcours: any;
+    } | null>(null);
 
     useEffect(() => {
         const fetchClasseData = async () => {
@@ -65,8 +77,11 @@ const ProgramPage = () => {
         }
     }, [slug]);
 
+    useEffect(() => {
+        fetchAnnees();
+    }, []);
 
-    if (loading) {
+    if (loading || loadingAnnee) {
         return <SectionLoader title="Chargement du programme..." />;
     }
 
@@ -83,6 +98,69 @@ const ProgramPage = () => {
         );
     }
 
+    const handleInscriptionSubmit = async (data: { matricule: string; selectedAnnee: Annee }) => {
+        try {
+            const faculteId = process.env.NEXT_PUBLIC_FACULTE_ID;
+            const etabId = process.env.NEXT_PUBLIC_ETAB_ID;
+            
+            // Vérifier que les variables d'environnement sont définies
+            if (!faculteId || !etabId) {
+                console.error('Variables d\'environnement manquantes: FACULTE_ID ou ETAB_ID');
+                return;
+            }
+
+            // Vérifier que les IDs requis sont définis
+            if (!classe._id || !data.selectedAnnee._id) {
+                console.error('IDs manquants: classeId ou anneeId');
+                return;
+            }
+
+            console.log("Data to subscribe", data);
+            console.log("Classe", classe);
+            console.log("Cycle", cycle);
+            console.log("Faculte", faculteId);
+            console.log("Etab", etabId);
+            console.log("Annee", data.selectedAnnee);
+            console.log("Matricule", data.matricule);
+
+            const payload = {
+                matricule: data.matricule,
+                classeId: classe._id,
+                anneeId: data.selectedAnnee._id,
+                faculteId: faculteId,
+                etabId: etabId
+            }
+
+            const response = await EtudiantService.subscribeClasse(payload);
+            console.log("Response", response);
+
+            if (!response.success) {
+                console.error('Erreur lors de l\'inscription:', response.message);
+                return;
+            }
+
+            if (!response.data) {
+                console.error('Aucune donnée reçue dans la réponse');
+                return;
+            }
+
+            const {
+                etudiant,
+                parcours
+            } = response.data;
+
+            console.log("Etudiant", etudiant);
+            console.log("Parcours", parcours);
+
+            // Sauvegarder les données d'inscription et afficher la modal de succès
+            setInscriptionData({ etudiant, parcours });
+            setShowInscriptionModal(false);
+            setShowSuccessModal(true);
+        } catch (error) {
+            console.error('Erreur lors de l\'inscription:', error);
+        }
+    };
+
     return (
         <div className="lg:w-4/5">
             <div className="animate_top rounded-md border border-stroke bg-white p-7.5 shadow-solid-13 dark:border-strokedark dark:bg-blacksection md:p-10">
@@ -98,7 +176,7 @@ const ProgramPage = () => {
                                 className="h-8 w-8 object-contain"
                             />
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <h1 className="text-3xl font-bold text-black dark:text-white">
                                 {classe.designation}
                             </h1>
@@ -106,6 +184,12 @@ const ProgramPage = () => {
                                 Cycle: {cycle.designation} • {classe.semestres.length} semestre{classe.semestres.length > 1 ? 's' : ''}
                             </p>
                         </div>
+                        <button
+                            onClick={() => setShowInscriptionModal(true)}
+                            className="rounded-lg bg-primary px-6 py-3 text-white transition-colors hover:bg-primary/90"
+                        >
+                            S'inscrire à cette classe
+                        </button>
                     </div>
                     
                     <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
@@ -166,6 +250,29 @@ const ProgramPage = () => {
                     </div>
                 </div>
             </div>
+            
+            {/* Modal d'inscription */}
+            <InscriptionModal
+                isOpen={showInscriptionModal}
+                onClose={() => setShowInscriptionModal(false)}
+                onSubmit={handleInscriptionSubmit}
+                annees={annees}
+                classeTitle={classe.designation}
+            />
+
+            {/* Modal de confirmation d'inscription */}
+            {inscriptionData && (
+                <InscriptionSuccessModal
+                    isOpen={showSuccessModal}
+                    onClose={() => {
+                        setShowSuccessModal(false);
+                        setInscriptionData(null);
+                    }}
+                    etudiant={inscriptionData.etudiant}
+                    classeTitle={classe.designation}
+                    parcours={inscriptionData.parcours}
+                />
+            )}
         </div>
     );
 }

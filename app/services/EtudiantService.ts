@@ -29,6 +29,50 @@ class EtudiantService {
       return headers;
     }
 
+    async subscribeClasse({
+        matricule,
+        classeId,
+        anneeId,
+        faculteId,
+        etabId
+    }: {
+        matricule: string;
+        classeId: string;
+        anneeId: string;
+        faculteId: string;
+        etabId: string
+    }): Promise<{success: boolean; message: string; data?: {etudiant: Etudiant; parcours: any}}> {
+        try {
+            const response = await fetch(`${this.baseUrl}/parcours`, {
+                method: "POST",
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify({
+                    matricule,
+                    classeId,
+                    anneeId,
+                    faculteId,
+                    etabId
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            // Mettre à jour les données locales si la modification réussit
+            if (result.success && result.data) {
+                localStorage.setItem('studentData', JSON.stringify(result.data));
+            }
+
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour:", error);
+            throw error;
+        }
+    }
+
     async loginEtudiant(credentials: LoginCredentials): Promise<LoginResponse> {
         try {
             const response = await fetch(`${this.baseUrl}/login`, {
