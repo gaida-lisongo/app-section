@@ -81,9 +81,9 @@ const ProgramPage = () => {
         fetchAnnees();
     }, []);
 
-    if (loading || loadingAnnee) {
-        return <SectionLoader title="Chargement du programme..." />;
-    }
+    // if (loading || loadingAnnee) {
+    //     return <SectionLoader title="Chargement du programme..." />;
+    // }
 
     if (!classe || !cycle) {
         return (

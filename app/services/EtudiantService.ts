@@ -15,7 +15,8 @@ export interface Recours {
 
 class EtudiantService {
     private baseUrl = config.base_url + "/etudiant";
-  
+    private apiBaseUrl = config.base_url;
+
     private getAuthHeaders(): HeadersInit {
       const token = localStorage.getItem('authToken') || localStorage.getItem('token') || "";
       const headers: HeadersInit = {
@@ -248,6 +249,55 @@ class EtudiantService {
             const response = await fetch(`${this.baseUrl}/checkProduct/${matricule}/${productId}`, {
                 method: "GET",
                 headers: this.getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erreur lors de la vérification du matricule:", error);
+            throw error;
+        }
+    }
+
+    async checkResoution(etudiantId: string, travailId: string): Promise<{success: boolean; message: string; data: any}> {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/resolution/exist/${travailId}/${etudiantId}`, {
+                method: "GET",
+                headers: this.getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erreur lors de la vérification du matricule:", error);
+            throw error;
+        }
+    }
+
+    async submitResolution({
+        etudiantId,
+        travailId,
+        url
+    } : {
+        etudiantId: string,
+        travailId: string,
+        url: string
+    }): Promise<{success: boolean; message: string; data: any}> {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/resolution`, {
+                method: "POST",
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify({
+                    etudiantId,
+                    travailId,
+                    url
+                })
             });
 
             if (!response.ok) {

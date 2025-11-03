@@ -23,6 +23,8 @@ import {
 import EtudiantService from '@/app/services/EtudiantService';
 import CommandeVerificationService from '@/app/services/CommandeVerificationService';
 import PresenceConfirmationModal from './PresenceConfirmationModal';
+import BlobManager from '@/app/services/BlobManager';
+import TravailResultModal from './TravailResultModal';
 
 interface ECDetailProps {
   cours: Cours;
@@ -37,6 +39,8 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
   const [showPresenceModal, setShowPresenceModal] = useState(false);
   const [selectedSeance, setSelectedSeance] = useState<any>(null);
   const [presenceData, setPresenceData] = useState<any>(null);
+  const [showTravailResultModal, setShowTravailResultModal] = useState(false);
+  const [travailResultData, setTravailResultData] = useState<any>(null);
   console.log("Cours Detail : ", cours);
   const getStatusBadge = (status: 'PENDING' | 'OK' | 'NO') => {
     switch (status) {
@@ -116,6 +120,80 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
       window.open(`/produits/${produitId}`, '_blank');
     } finally {
       setCheckingTravail(null);
+    }
+  }
+
+  const checkCommanded = async (travail: any) => {
+    try {
+      const etudiantData = localStorage.getItem('studentFullData');
+      const studentFullData = JSON.parse(etudiantData || '{}');
+
+      const { etudiant } = studentFullData;
+
+      const request = await EtudiantService.checkResoution(etudiant._id, travail._id);
+      console.log("Response : ", request);
+
+      if (request.success) {
+        const { data } = request;
+
+        const travailResult = {
+          url: data.url,
+          note: data?.note ?? 0,
+          status: data.status
+        };
+
+        // Afficher la modal avec les résultats
+        setTravailResultData(travailResult);
+        setShowTravailResultModal(true);
+      } else {
+        // Sinon, permettre l'upload d'un nouveau fichier
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.zip,.pdf,.docx,.jpg,.jpeg,.png';
+        
+        fileInput.addEventListener('change', async (event: Event) => {
+          const target = event.target as HTMLInputElement;
+          const file = target.files?.[0];
+          
+          if (file) {
+            try {
+              // 1. Upload du fichier via BlobManager
+              console.log('Upload du fichier via BlobManager...');
+              const uploadResult = await BlobManager.createBlob(file, {
+                etudiantId: etudiant._id,
+                travailId: travail._id,
+                type: 'resolution'
+              });
+              
+              console.log('Upload réussi:', uploadResult);
+              
+              // 2. Soumission de la résolution avec l'URL reçue
+              const submitResult = await EtudiantService.submitResolution({
+                etudiantId: etudiant._id,
+                travailId: travail._id,
+                url: uploadResult.url
+              });
+              
+              if (submitResult.success) {
+                alert('Résolution soumise avec succès !');
+                // Optionnel: ouvrir l'URL de la résolution
+                window.open(uploadResult.url, '_blank');
+              } else {
+                throw new Error(submitResult.message || 'Erreur lors de la soumission');
+              }
+            } catch (error) {
+              console.error('Erreur lors de l\'upload ou de la soumission:', error);
+              alert('Erreur lors de l\'envoi du fichier. Veuillez réessayer.');
+            }
+          }
+        });
+        
+        fileInput.click();
+      }
+      
+    } catch (error) {
+      console.error("Error checking resolution : ", error);
+      alert('Erreur lors de la vérification de la résolution.');
     }
   }
 
@@ -378,9 +456,14 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                             </div>
                             <div>
                               <h4 className="font-medium text-gray-900 dark:text-white">Travail {index + 1}</h4>
-                              <p className="text-sm text-gray-500">
-                                Année: {typeof travail.anneeId === 'object' ? travail.anneeId.debut + ' - ' + travail.anneeId.fin : travail.anneeId}
-                              </p>
+                              {/* Bouton de chargement de resolution */}
+                              <button 
+                                className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => checkCommanded(travail)}
+                                disabled={checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId)}
+                              >
+                                Résolution du travail
+                              </button>
                               {/* {travail.questionnaire && (
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{travail.questionnaire}</p>
                               )} */}
@@ -479,6 +562,19 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
         coursTitle={cours.titre}
         data={presenceData}
       />
+
+      {/* Modal de résultat du travail */}
+      {travailResultData && (
+        <TravailResultModal
+          isOpen={showTravailResultModal}
+          onClose={() => {
+            setShowTravailResultModal(false);
+            setTravailResultData(null);
+          }}
+          travailData={travailResultData}
+          travailTitle={cours.titre}
+        />
+      )}
     </div>
   );
 };

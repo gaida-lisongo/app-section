@@ -110,9 +110,9 @@ const CoursDetailModal: React.FC<CoursDetailModalProps> = ({ cours, isOpen, onCl
       const checkPayment = await SemestreService.checkPayment(orderNumber);
       console.log("Payment checked:", checkPayment);
       
-      if (checkPayment.status == '2') {
+      if (checkPayment.status == '1') {
         setMessage(checkPayment?.message || 'Paiement en attente');
-      } else if (checkPayment.status == '0') {
+      } else if (checkPayment.status == '2') {
         // Paiement réussi - générer la facture
         await generateInvoice();
         setShowConfirmationModal(false);
