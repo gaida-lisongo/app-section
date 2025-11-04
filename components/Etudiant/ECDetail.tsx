@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Cours } from '@/types/etudiant';
 import { 
   ArrowLeft,
@@ -25,6 +25,7 @@ import CommandeVerificationService from '@/app/services/CommandeVerificationServ
 import PresenceConfirmationModal from './PresenceConfirmationModal';
 import BlobManager from '@/app/services/BlobManager';
 import TravailResultModal from './TravailResultModal';
+import TravailService from '@/app/services/TravailService';
 
 interface ECDetailProps {
   cours: Cours;
@@ -41,7 +42,9 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
   const [presenceData, setPresenceData] = useState<any>(null);
   const [showTravailResultModal, setShowTravailResultModal] = useState(false);
   const [travailResultData, setTravailResultData] = useState<any>(null);
+  const [isCommanded, setIsCommanded] = useState(false);
   console.log("Cours Detail : ", cours);
+
   const getStatusBadge = (status: 'PENDING' | 'OK' | 'NO') => {
     switch (status) {
       case 'OK':
@@ -125,71 +128,89 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
 
   const checkCommanded = async (travail: any) => {
     try {
-      const etudiantData = localStorage.getItem('studentFullData');
-      const studentFullData = JSON.parse(etudiantData || '{}');
+      CommandeVerificationService.checkCommandeWithStoredMatricule(travail.produitId, {
+        onSuccess: async (hasCommande, data) => {
+          if (hasCommande) {
+            const etudiantData = localStorage.getItem('studentFullData');
+            const studentFullData = JSON.parse(etudiantData || '{}');
 
-      const { etudiant } = studentFullData;
+            const { etudiant } = studentFullData;
 
-      const request = await EtudiantService.checkResoution(etudiant._id, travail._id);
-      console.log("Response : ", request);
+            const request = await EtudiantService.checkResoution(etudiant._id, travail._id);
+            console.log("Response : ", request);
 
-      if (request.success) {
-        const { data } = request;
+            if (request.success) {
+              const { data } = request;
 
-        const travailResult = {
-          url: data.url,
-          note: data?.note ?? 0,
-          status: data.status
-        };
+              const travailResult = {
+                url: data.url,
+                note: data?.note ?? 0,
+                status: data.status,
+                resolutionId: data._id
+              };
 
-        // Afficher la modal avec les résultats
-        setTravailResultData(travailResult);
-        setShowTravailResultModal(true);
-      } else {
-        // Sinon, permettre l'upload d'un nouveau fichier
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.zip,.pdf,.docx,.jpg,.jpeg,.png';
-        
-        fileInput.addEventListener('change', async (event: Event) => {
-          const target = event.target as HTMLInputElement;
-          const file = target.files?.[0];
-          
-          if (file) {
-            try {
-              // 1. Upload du fichier via BlobManager
-              console.log('Upload du fichier via BlobManager...');
-              const uploadResult = await BlobManager.createBlob(file, {
-                etudiantId: etudiant._id,
-                travailId: travail._id,
-                type: 'resolution'
+              // Afficher la modal avec les résultats
+              setTravailResultData(travailResult);
+              setShowTravailResultModal(true);
+            } else {
+              // Sinon, permettre l'upload d'un nouveau fichier
+              const fileInput = document.createElement('input');
+              fileInput.type = 'file';
+              fileInput.accept = '.zip,.pdf,.docx,.jpg,.jpeg,.png';
+              
+              fileInput.addEventListener('change', async (event: Event) => {
+                const target = event.target as HTMLInputElement;
+                const file = target.files?.[0];
+                
+                if (file) {
+                  try {
+                    // 1. Upload du fichier via BlobManager
+                    console.log('Upload du fichier via BlobManager...');
+                    const uploadResult = await BlobManager.createBlob(file, {
+                      etudiantId: etudiant._id,
+                      travailId: travail._id,
+                      type: 'resolution'
+                    });
+                    
+                    console.log('Upload réussi:', uploadResult);
+                    
+                    // 2. Soumission de la résolution avec l'URL reçue
+                    const submitResult = await EtudiantService.submitResolution({
+                      etudiantId: etudiant._id,
+                      travailId: travail._id,
+                      url: uploadResult.url
+                    });
+                    
+                    if (submitResult.success) {
+                      alert('Résolution soumise avec succès !');
+                      // Optionnel: ouvrir l'URL de la résolution
+                      window.open(uploadResult.url, '_blank');
+                    } else {
+                      throw new Error(submitResult.message || 'Erreur lors de la soumission');
+                    }
+                  } catch (error) {
+                    console.error('Erreur lors de l\'upload ou de la soumission:', error);
+                    alert('Erreur lors de l\'envoi du fichier. Veuillez réessayer.');
+                  }
+                }
               });
               
-              console.log('Upload réussi:', uploadResult);
-              
-              // 2. Soumission de la résolution avec l'URL reçue
-              const submitResult = await EtudiantService.submitResolution({
-                etudiantId: etudiant._id,
-                travailId: travail._id,
-                url: uploadResult.url
-              });
-              
-              if (submitResult.success) {
-                alert('Résolution soumise avec succès !');
-                // Optionnel: ouvrir l'URL de la résolution
-                window.open(uploadResult.url, '_blank');
-              } else {
-                throw new Error(submitResult.message || 'Erreur lors de la soumission');
-              }
-            } catch (error) {
-              console.error('Erreur lors de l\'upload ou de la soumission:', error);
-              alert('Erreur lors de l\'envoi du fichier. Veuillez réessayer.');
+              fileInput.click();
             }
+          } else {
+            // Si l'étudiant n'a pas commandé le produit, rediriger vers la page produit
+            window.open(`/produits/${travail.produitId}`, '_blank');
           }
-        });
-        
-        fileInput.click();
-      }
+        },
+        onError: (error) => {
+          console.error("Erreur lors de la vérification du travail:", error);
+          // En cas d'erreur, rediriger vers la page produit par défaut
+          window.open(`/produits/${travail.produitId}`, '_blank');
+        },
+        redirections: {
+          error: `/produits/${travail.produitId}`
+        }
+      });
       
     } catch (error) {
       console.error("Error checking resolution : ", error);
@@ -225,6 +246,7 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
       console.error("Error occured : ", error)
     }
   }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-blacksection">
       {/* Header */}
@@ -460,7 +482,6 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                               <button 
                                 className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={() => checkCommanded(travail)}
-                                disabled={checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId)}
                               >
                                 Résolution du travail
                               </button>
@@ -575,6 +596,7 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
           travailTitle={cours.titre}
         />
       )}
+
     </div>
   );
 };

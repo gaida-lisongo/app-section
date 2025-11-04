@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
-import { X, FileText, ExternalLink, Award, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, FileText, ExternalLink, Award, CheckCircle, XCircle, AlertCircle, Trash2, Loader2 } from 'lucide-react';
+import TravailService from '@/app/services/TravailService';
 
 interface TravailResultModalProps {
   isOpen: boolean;
@@ -10,16 +11,45 @@ interface TravailResultModalProps {
     url: string;
     note: number;
     status: 'PENDING' | 'OK' | 'NO';
+    resolutionId?: string;
   };
   travailTitle?: string;
+  onDelete?: () => void;
 }
 
 const TravailResultModal: React.FC<TravailResultModalProps> = ({
   isOpen,
   onClose,
   travailData,
-  travailTitle = "Travail"
+  travailTitle = "Travail",
+  onDelete
 }) => {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteResolution = async () => {
+    if (!travailData.resolutionId) {
+      alert('Impossible de supprimer : ID de résolution manquant');
+      return;
+    }
+
+    if (!confirm('Êtes-vous sûr de vouloir supprimer votre résolution ? Cette action est irréversible.')) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await TravailService.deleteResolution(travailData.resolutionId);
+      alert('Résolution supprimée avec succès');
+      onDelete?.();
+      onClose();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur lors de la suppression de la résolution');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   const getStatusBadge = (status: 'PENDING' | 'OK' | 'NO') => {
@@ -148,7 +178,24 @@ const TravailResultModal: React.FC<TravailResultModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-strokedark">
+          <div className="flex justify-between items-center p-6 border-t border-gray-200 dark:border-strokedark">
+            <button
+              onClick={handleDeleteResolution}
+              disabled={deleting}
+              className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Suppression...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Supprimer ma résolution
+                </>
+              )}
+            </button>
             <button
               onClick={onClose}
               className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
