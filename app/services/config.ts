@@ -10,7 +10,7 @@ interface Config {
 // Configuration par défaut
 const defaultConfig: Config = {
   _id: "68c86d44dc560409876c4b9a",
-  base_url: "http://192.168.1.69:4003/api/v1", //"https://server-gr.he-section.site/api/v1"
+  base_url: "http://192.168.1.78:4003/api/v1", //"https://server-gr.he-section.site/api/v1"
 };
 
 // Charger la configuration depuis les variables d'environnement

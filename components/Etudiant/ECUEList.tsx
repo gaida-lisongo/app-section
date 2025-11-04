@@ -25,7 +25,7 @@ interface CoursInscrit {
   semestreId: string;
   unite: string;
   uniteId: string;
-  ficheCotation: FicheCotation;
+  ficheCotation: FicheCotation | null;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
@@ -41,6 +41,7 @@ const ECUEList: React.FC<ECUEListProps> = ({ semestres } : ECUEListProps) => {
   const [selectedCours, setSelectedCours] = useState<CoursInscrit | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
+  // console.log("all semestres : ", semestres);
   console.log("Current cours: ", selectedCours);
 
   // Extraire tous les cours auxquels l'étudiant est inscrit (avec fiche de cotation)
@@ -48,25 +49,29 @@ const ECUEList: React.FC<ECUEListProps> = ({ semestres } : ECUEListProps) => {
     const cours: CoursInscrit[] = [];
     
     semestres.forEach(semestre => {
-      semestre.unites.forEach(unite => {
+
+      semestre?.unites.forEach(unite => {
+
+        if(!unite) return null;
+
         unite.cours.forEach(coursItem => {
-          if (coursItem.fiche_cotation) {
-            cours.push({
-              cours: coursItem,
-              semestre: semestre.designation,
-              semestreId: semestre._id,
-              unite: unite.descripteur.designation,
-              uniteId: unite._id,
-              ficheCotation: coursItem.fiche_cotation,
-              status: coursItem.fiche_cotation.status
-            });
-          }
+          cours.push({
+            cours: coursItem,
+            semestre: semestre.designation,
+            semestreId: semestre._id,
+            unite: unite.descripteur.designation,
+            uniteId: unite._id,
+            ficheCotation: coursItem?.fiche_cotation ?? null,
+            status: coursItem?.fiche_cotation?.status ?? 'PENDING'
+          });
         });
       });
     });
     
     return cours;
   }, [semestres]);
+
+  console.log("Detail cours inscrits : ", coursInscrits);
 
   // Extraire les options de filtrage (sans doublons)
   const semestresOptions = useMemo(() => {
@@ -376,11 +381,11 @@ const ECUEList: React.FC<ECUEListProps> = ({ semestres } : ECUEListProps) => {
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-strokedark">
                       <div className="flex items-center space-x-3">
                         {getStatusBadge(coursInscrit.status)}
-                        {coursInscrit.ficheCotation.reference && (
+                        {coursInscrit?.ficheCotation ? coursInscrit.ficheCotation.reference && (
                           <span className="text-xs text-gray-500">
                             Réf: {coursInscrit.ficheCotation.reference}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                       
                       <div className="flex items-center space-x-2">
