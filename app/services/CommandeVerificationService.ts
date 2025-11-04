@@ -40,6 +40,9 @@ class CommandeVerificationService {
 
       if (response.success) {
         const { data } = response;
+
+        console.log("Commande : ", data);
+        
         const hasCommande = !!data;
 
         // Appeler le callback de succès si fourni

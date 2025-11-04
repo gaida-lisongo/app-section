@@ -130,6 +130,8 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
     try {
       CommandeVerificationService.checkCommandeWithStoredMatricule(travail.produitId, {
         onSuccess: async (hasCommande, data) => {
+          console.log("Result commande : ", hasCommande);
+          
           if (hasCommande) {
             const etudiantData = localStorage.getItem('studentFullData');
             const studentFullData = JSON.parse(etudiantData || '{}');
