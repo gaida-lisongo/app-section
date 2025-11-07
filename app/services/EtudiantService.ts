@@ -30,6 +30,26 @@ class EtudiantService {
       return headers;
     }
 
+    async fetchEtudiant (id: string) : Promise<{success: boolean; message: string; data?: Etudiant}> {
+        try {
+            const response = await fetch(`${this.baseUrl}/id/${id}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erreur lors de la récupération de l'étudiant:", error);
+            throw error;
+        }
+    }
+
     async subscribeClasse({
         matricule,
         classeId,
@@ -74,9 +94,62 @@ class EtudiantService {
         }
     }
 
+    async checkAccount({
+        section,
+        matricule
+    } : {section: string, matricule: string}): Promise<{success: boolean; message: string; data?: any}> {
+        try {
+            const response = await fetch(`${this.baseUrl}/check-account/${section}/${matricule}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour:", error);
+            throw error;
+        }
+    }
+
     async loginEtudiant(credentials: LoginCredentials): Promise<LoginResponse> {
         try {
             const response = await fetch(`${this.baseUrl}/login`, {
+                method: "POST",
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify(credentials),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            // Si la connexion réussit, sauvegarder le token et les données
+            if (result.success && result.data) {
+                localStorage.setItem('authToken', result.data.token);
+                localStorage.setItem('studentData', JSON.stringify(result.data.etudiant));
+                localStorage.setItem('studentFullData', JSON.stringify(result.data));
+            }
+
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de la connexion:", error);
+            throw error;
+        }
+    }
+
+    async login(credentials: LoginCredentials): Promise<LoginResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/connected`, {
                 method: "POST",
                 headers: this.getAuthHeaders(),
                 body: JSON.stringify(credentials),
@@ -122,6 +195,30 @@ class EtudiantService {
             }
 
             return result;
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour:", error);
+            throw error;
+        }
+    }
+
+    async updateSecure(etudiantId: string, secure: string) : Promise<{success: boolean; message: string; data: any}> {
+        try {
+            const response = await fetch(`${this.baseUrl}/secure`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    etudiantId,
+                    secure
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
         } catch (error) {
             console.error("Erreur lors de la mise à jour:", error);
             throw error;

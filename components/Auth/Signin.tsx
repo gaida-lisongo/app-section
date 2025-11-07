@@ -223,12 +223,12 @@ const Signin = () => {
 
               <div className="mt-12.5 border-t border-stroke py-5 text-center dark:border-strokedark">
                 <p>
-                  N'avez vous pas de compte?{" "}
+                  Avez-vous perdu votre mot de passe?{" "}
                   <Link
                     className="text-black hover:text-primary dark:text-white dark:hover:text-primary"
-                    href="/"
+                    href="/reset"
                   >
-                    S'inscrire
+                    Recupérer son compte
                   </Link>
                 </p>
               </div>

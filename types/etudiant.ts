@@ -142,6 +142,7 @@ export interface Etudiant {
   secure: string;
   documents: string[];
   photo: string;
+  email?: string;
   semestres: any[];
   __v: number;
   solde: number;

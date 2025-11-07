@@ -22,6 +22,7 @@ interface UserAuthState {
   // Actions d'authentification
   login: (credentials: LoginCredentials) => Promise<boolean>;
   logout: () => void;
+  connect: (credentials: LoginCredentials) => Promise<boolean>;
   
   // Actions de gestion du profil
   updateProfile: (updateData: Partial<Etudiant>) => Promise<boolean>;
@@ -60,6 +61,46 @@ export const useUserAuthStore = create<UserAuthState>()(
         
         try {
           const response = await EtudiantService.loginEtudiant(credentials);
+          
+          if (response.success && response.data) {
+            const { token, etudiant, mySemestres, myRecherches, myStages, myValidations, myReleves, mySessions } = response.data;
+            
+            set({
+              isAuthenticated: true,
+              isLoading: false,
+              token,
+              etudiant,
+              mySemestres,
+              myRecherches,
+              myStages,
+              myValidations,
+              myReleves,
+              mySessions,
+              error: null
+            });
+            
+            return true;
+          } else {
+            set({
+              isLoading: false,
+              error: response.message || 'Échec de la connexion'
+            });
+            return false;
+          }
+        } catch (error: any) {
+          set({
+            isLoading: false,
+            error: error.message || 'Erreur lors de la connexion'
+          });
+          return false;
+        }
+      },
+
+      connect: async (credentials: LoginCredentials) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          const response = await EtudiantService.login(credentials);
           
           if (response.success && response.data) {
             const { token, etudiant, mySemestres, myRecherches, myStages, myValidations, myReleves, mySessions } = response.data;
