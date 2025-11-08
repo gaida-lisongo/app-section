@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validation de la taille du fichier (max 10MB)
-    const maxSize = 100 * 1024 * 1024; // 10MB
+    const maxSize = 13 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: 'Fichier trop volumineux. Taille maximum autorisée: 10MB.' },
