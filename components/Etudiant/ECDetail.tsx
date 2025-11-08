@@ -158,7 +158,7 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
               // Sinon, permettre l'upload d'un nouveau fichier
               const fileInput = document.createElement('input');
               fileInput.type = 'file';
-              fileInput.accept = '.zip,.pdf,.docx,.jpg,.jpeg,.png';
+              fileInput.accept = '*';
               
               fileInput.addEventListener('change', async (event: Event) => {
                 const target = event.target as HTMLInputElement;
