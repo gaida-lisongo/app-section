@@ -5,7 +5,11 @@ import { useEffect, useState } from "react";
 import { Loader2, Mail, Phone, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Etudiant } from "@/types/etudiant";
 
-const ResolutionPayment = ({ produit, onSuccess }: { produit : Produit, onSuccess : (payment : any) => void}) => {
+const ResolutionPayment = ({ produit, onChecking, onSuccess }: { 
+    produit : Produit, 
+    onChecking : (id: string) => void, 
+    onSuccess : (payment : any) => void
+}) => {
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [commande, setCommande] = useState<Commande | null>(null);
@@ -16,9 +20,15 @@ const ResolutionPayment = ({ produit, onSuccess }: { produit : Produit, onSucces
     const [emailError, setEmailError] = useState("");
     const [telephoneError, setTelephoneError] = useState("");
     const [alert, setAlert] = useState<string>(
-                            `<strong className="font-semibold">Important:</strong> Après avoir cliqué sur "Procéder au paiement", 
+                            `Important: Après avoir cliqué sur "Procéder au paiement", 
                             vous serez redirigé vers la plateforme de paiement sécurisée. 
                             Une fois le paiement effectué, revenez ici pour vérifier et continuer.`)
+
+    useEffect(() => {
+        if (produit) {
+            onChecking(produit?._id as string);
+        }
+    }, []);
 
     useEffect(() => {
         const etudiantData = localStorage.getItem('studentFullData');

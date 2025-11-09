@@ -116,6 +116,28 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
     );
   };
 
+  const isCheckingCommande = async (id: string) => {
+    try {
+      await CommandeVerificationService.checkCommandeWithStoredMatricule(id, {
+        onSuccess: (hasCommande, data) => {
+          console.log("Current hasCommande : ", hasCommande);
+          console.log("Current data : ", data);
+          if(data){
+            setCommande(data?.commande);
+            setCheckingPayment(data?.commande);
+            setCommandeStep(2);
+          }
+        },
+        onError: (error) => {
+          console.error("Erreur lors de la vérification du travail:", error);
+        }
+      });
+    } catch (error) {
+      console.error("Erreur lors de la vérification du travail:", error);
+
+    }
+  }
+
   const checkTravail = async (travail: any) => {
     const produitId = typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId;
     
@@ -733,6 +755,9 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                   <ResolutionPayment 
                     produit={selectedTravail.produitId} 
                     onSuccess={makingCommande}
+                    onChecking={(id) => {
+                      isCheckingCommande(id);
+                    }}
                   />
                   <div className="flex justify-between pt-4">
                     <button
