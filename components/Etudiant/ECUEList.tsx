@@ -18,6 +18,7 @@ import {
   Target
 } from 'lucide-react';
 import ECDetail from './ECDetail';
+import ECCard from './ECCard';
 
 interface CoursInscrit {
   cours: Cours;
@@ -327,81 +328,11 @@ const ECUEList: React.FC<ECUEListProps> = ({ semestres } : ECUEListProps) => {
                   className="bg-white dark:bg-blacksection rounded-lg shadow-sm border border-gray-200 dark:border-strokedark hover:shadow-md transition-all duration-200 cursor-pointer"
                   onClick={() => handleViewCours(coursInscrit)}
                 >
-                  <div className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <div className="flex-shrink-0">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                              <BookOpen className="w-6 h-6 text-white" />
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                              {coursInscrit.cours.titre}
-                            </h3>
-                            <p className="text-sm text-gray-500 line-clamp-2">
-                              {coursInscrit.cours.description}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-6 text-sm text-gray-500">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{coursInscrit.semestre}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <GraduationCap className="w-4 h-4" />
-                            <span>{coursInscrit.unite}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{coursInscrit.cours.credit} crédits</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4 ml-6">
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-blue-600">{coursInscrit.cours.seances?.length || 0}</div>
-                          <div className="text-xs text-gray-500">Séances</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-green-600">{coursInscrit.cours.travaux?.length || 0}</div>
-                          <div className="text-xs text-gray-500">Travaux</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-purple-600">{coursInscrit.cours.ressources?.length || 0}</div>
-                          <div className="text-xs text-gray-500">Ressources</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-strokedark">
-                      <div className="flex items-center space-x-3">
-                        {getStatusBadge(coursInscrit.status)}
-                        {coursInscrit?.ficheCotation ? coursInscrit.ficheCotation.reference && (
-                          <span className="text-xs text-gray-500">
-                            Réf: {coursInscrit.ficheCotation.reference}
-                          </span>
-                        ) : null}
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewCours(coursInscrit);
-                          }}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Voir détails
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <ECCard 
+                    coursInscrit={coursInscrit}
+                    getStatusBadge={getStatusBadge}
+                    handleViewCours={handleViewCours}
+                  />
                 </div>
               ))}
             </div>
