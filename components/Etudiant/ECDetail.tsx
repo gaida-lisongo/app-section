@@ -18,7 +18,9 @@ import {
   ExternalLink,
   GraduationCap,
   User,
-  Loader2
+  Loader2,
+  Menu,
+  X
 } from 'lucide-react';
 import EtudiantService from '@/app/services/EtudiantService';
 import CommandeVerificationService from '@/app/services/CommandeVerificationService';
@@ -48,7 +50,9 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
   const [travailResultData, setTravailResultData] = useState<any>(null);
   // États pour la progression d'upload (utilisé dans la modal en 3 étapes)
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [checkingResolution, setCheckingResolution] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // États pour la modal de commande en 3 étapes
   const [showCommandeModal, setShowCommandeModal] = useState(false);
@@ -230,39 +234,50 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-blacksection">
-      {/* Header */}
-      <div className="bg-white dark:bg-blacksection border-b border-gray-200 dark:border-strokedark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-6">
-            <div className="flex items-center space-x-4">
+      {/* Header - Mobile First */}
+      <div className="bg-white dark:bg-blacksection border-b border-gray-200 dark:border-strokedark sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-3 sm:py-6">
+            {/* Mobile: Bouton retour + Titre */}
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
               <button
                 onClick={onBack}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white dark:hover:bg-gray-800"
+                className="inline-flex items-center p-2 sm:px-4 sm:py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white dark:hover:bg-gray-800 flex-shrink-0"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour à la liste
+                <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Retour à la liste</span>
               </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{cours.titre}</h1>
-                <p className="text-sm text-gray-500">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-base sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{cours.titre}</h1>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">
                   {semestre} • {unite} • {cours.credit} crédits
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            
+            {/* Desktop: Badge + Mobile: Menu hamburger */}
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+              <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                 <GraduationCap className="w-4 h-4 mr-1" />
                 ECUE
               </span>
+              {/* Bouton hamburger mobile */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="sm:hidden p-2 rounded-lg border border-gray-300 dark:border-strokedark text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs - Desktop horizontal, Mobile vertical */}
       <div className="bg-white dark:bg-blacksection border-b border-gray-200 dark:border-strokedark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden sm:flex space-x-8">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -281,6 +296,32 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
               );
             })}
           </nav>
+          
+          {/* Mobile Navigation - Menu déroulant */}
+          {mobileMenuOpen && (
+            <nav className="sm:hidden py-2 space-y-1">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id as any);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg font-medium text-sm transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-primary/10 text-primary border-l-4 border-primary'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          )}
         </div>
       </div>
 
@@ -449,19 +490,27 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Travaux et évaluations</h3>
                 {cours.travaux && cours.travaux.length > 0 ? (
-                  <div className="space-y-4">
-                    {cours.travaux.map((travail, index) => (
-                      <div key={index} className="border border-gray-200 dark:border-strokedark rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="flex-shrink-0">
-                              <Target className="w-5 h-5 text-green-500" />
+                  <div className="space-y-4 sm:space-y-5">
+                    {cours.travaux.map((travail: any, index) => (
+                      <div key={index} className="border-2 border-gray-200 dark:border-strokedark rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all bg-gradient-to-br from-white to-gray-50 dark:from-blacksection dark:to-gray-900">
+                        {/* Mobile: Layout vertical, Desktop: Layout horizontal */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                          {/* En-tête du travail */}
+                          <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
+                            <div className="flex-shrink-0 p-2 sm:p-3 rounded-full bg-gradient-to-br from-green-400 to-green-600">
+                              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                             </div>
-                            <div>
-                              <h4 className="font-medium text-gray-900 dark:text-white">Travail {index + 1}</h4>
-                              {/* Bouton de chargement de resolution */}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1">
+                                Travail {index + 1}
+                              </h4>
+                              <div className="flex items-center space-x-2 mb-3">
+                                {getStatusBadge(travail.status)}
+                              </div>
+                              
+                              {/* Bouton de résolution - Mobile: Pleine largeur, Desktop: Inline */}
                               <button 
-                                className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                 disabled={checkingResolution === travail._id}
                                 onClick={async () => {
                                   setCheckingResolution(travail._id);
@@ -503,31 +552,37 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                               >
                                 {checkingResolution === travail._id ? (
                                   <>
-                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                    Vérification...
+                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                    Vérification en cours...
                                   </>
                                 ) : (
-                                  'Résolution du travail'
+                                  <>
+                                    <FileText className="w-5 h-5 mr-2" />
+                                    Soumettre ma résolution
+                                  </>
                                 )}
                               </button>
-                              {/* {travail.questionnaire && (
-                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{travail.questionnaire}</p>
-                              )} */}
                             </div>
                           </div>
-                          <div className="flex items-center space-x-3">
-                            {getStatusBadge(travail.status)}
+                          
+                          {/* Bouton Commencer - Desktop uniquement à droite, Mobile en bas */}
+                          <div className="flex sm:flex-col items-center space-x-3 sm:space-x-0 sm:space-y-3 sm:ml-4">
                             <button 
-                              className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 border-2 border-primary rounded-lg text-sm sm:text-base font-semibold text-primary bg-white dark:bg-blacksection hover:bg-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                               onClick={() => checkTravail(travail)}
                               disabled={checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId)}
                             >
                               {checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId) ? (
-                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                <>
+                                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
+                                  <span className="hidden sm:inline">Chargement...</span>
+                                </>
                               ) : (
-                                <FileText className="w-4 h-4 mr-1" />
+                                <>
+                                  <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                                  Commencer
+                                </>
                               )}
-                              {checkingTravail === (typeof travail.produitId === 'object' ? travail.produitId._id : travail.produitId) ? 'Vérification...' : 'Voir détails'}
                             </button>
                           </div>
                         </div>
@@ -535,7 +590,7 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">Aucun travail assigné</p>
+                  <p className="text-gray-500 text-center py-8">Aucun travail disponible</p>
                 )}
               </div>
             </div>
@@ -781,8 +836,7 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                     uploadedFileUrl={uploadedFileUrl}
                     setUploadedFileUrl={setUploadedFileUrl}
                     isSubmittingResolution={isSubmittingResolution}
-                    uploadProgress={uploadProgress}
-                    setUploadProgress={setUploadProgress}
+                    uploadSuccess={uploadSuccess}
                   />
 
                   <div className="flex justify-between pt-4">
@@ -802,6 +856,7 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
 
                         setIsSubmittingResolution(true);
                         setUploadProgress(0);
+                        setUploadSuccess(false);
 
                         try {
                           const etudiantData = localStorage.getItem('studentFullData');
@@ -828,18 +883,19 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                             url: uploadResult.url
                           });
 
+                          setIsSubmittingResolution(false);
+
                           if (submitResult.success) {
-                            alert('Résolution soumise avec succès !');
-                            setShowCommandeModal(false);
-                            setCommandeStep(1);
-                            setSelectedTravail(null);
-                            setUploadedFile(null);
-                            setUploadedFileUrl('');
-                            
-                            // Ouvrir le questionnaire si disponible
-                            if (selectedTravail.questionnaire) {
-                              window.open(selectedTravail.questionnaire, '_blank');
-                            }
+                            setUploadSuccess(true);
+                            // Fermer la modal après 3 secondes
+                            setTimeout(() => {
+                              setShowCommandeModal(false);
+                              setUploadSuccess(false);
+                              // Réinitialiser les états
+                              setUploadedFile(null);
+                              setUploadedFileUrl('');
+                              setCommandeStep(1);
+                            }, 3000);
                           } else {
                             throw new Error(submitResult.message || 'Erreur lors de la soumission');
                           }
