@@ -26,6 +26,10 @@ import PresenceConfirmationModal from './PresenceConfirmationModal';
 import BlobManager from '@/app/services/BlobManager';
 import TravailResultModal from './TravailResultModal';
 import TravailService from '@/app/services/TravailService';
+import ResolutionPayment from './ResolutionPayment';
+import TransactionService from '@/app/services/TransactionService';
+import ResolutionChecking from './ResolutionChecking';
+import ResolutonSubmit from './ResolutionSubmit';
 
 interface ECDetailProps {
   cours: Cours;
@@ -42,9 +46,30 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
   const [presenceData, setPresenceData] = useState<any>(null);
   const [showTravailResultModal, setShowTravailResultModal] = useState(false);
   const [travailResultData, setTravailResultData] = useState<any>(null);
-  const [isCommanded, setIsCommanded] = useState(false);
-  console.log("Cours Detail : ", cours);
-
+  // États pour la progression d'upload (utilisé dans la modal en 3 étapes)
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [checkingResolution, setCheckingResolution] = useState<string | null>(null);
+  
+  // États pour la modal de commande en 3 étapes
+  const [showCommandeModal, setShowCommandeModal] = useState(false);
+  const [commandeStep, setCommandeStep] = useState(1);
+  const [selectedTravail, setSelectedTravail] = useState<any>(null);
+  const [paymentReference, setPaymentReference] = useState('');
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [isSubmittingResolution, setIsSubmittingResolution] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState('');
+  const [commande, setCommande] = useState<{
+        _id: string,
+        productIds: string[],
+        status: 'PENDING' | 'NO' | 'OK',
+        reference: string,
+        matricule: string,
+        currency: string
+    } | null>(null);
+  const [error, setError] = useState<string | null>("Pour accéder à ce travail, vous devez d'abord effectuer le paiement.");
+  const [checkingResolutionPayment, setCheckingPayment] = useState<any | null>(null);
+  
   const getStatusBadge = (status: 'PENDING' | 'OK' | 'NO') => {
     switch (status) {
       case 'OK':
@@ -126,97 +151,51 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
     }
   }
 
-  const checkCommanded = async (travail: any) => {
+  const makingCommande = (data: {
+        _id: string,
+        productIds: string[],
+        status: 'PENDING' | 'NO' | 'OK',
+        reference: string,
+        matricule: string,
+        currency: string
+    }) => {
+    setCommande(data);
+  }
+
+  const checkTransaction = async (back_step = 2) => {
     try {
-      CommandeVerificationService.checkCommandeWithStoredMatricule(travail.produitId, {
-        onSuccess: async (hasCommande, data) => {
-          console.log("Result commande : ", hasCommande);
-          
-          if (hasCommande) {
-            const etudiantData = localStorage.getItem('studentFullData');
-            const studentFullData = JSON.parse(etudiantData || '{}');
+      const response = await TransactionService.checkPayment(commande?.reference as string);
+      console.log(response?.data);
+      const data = response?.data;
+      if (data) {
+        const {
+          status,
+          amount,
+          amountCustomer,
+          currency,
+          createdAt
+        } = data?.data as any;
 
-            const { etudiant } = studentFullData;
+        setCheckingPayment({
+          status,
+          amount,
+          amountCustomer,
+          currency,
+          createdAt
+        });
 
-            const request = await EtudiantService.checkResoution(etudiant._id, travail._id);
-            console.log("Response : ", request);
-
-            if (request.success) {
-              const { data } = request;
-
-              const travailResult = {
-                url: data.url,
-                note: data?.note ?? 0,
-                status: data.status,
-                resolutionId: data._id
-              };
-
-              // Afficher la modal avec les résultats
-              setTravailResultData(travailResult);
-              setShowTravailResultModal(true);
-            } else {
-              // Sinon, permettre l'upload d'un nouveau fichier
-              const fileInput = document.createElement('input');
-              fileInput.type = 'file';
-              fileInput.accept = '.zip,.rar,.docx,.doc,.xlsx,.pdf';
-              
-              fileInput.addEventListener('change', async (event: Event) => {
-                const target = event.target as HTMLInputElement;
-                const file = target.files?.[0];
-                
-                if (file) {
-                  try {
-                    // 1. Upload du fichier via BlobManager
-                    console.log('Upload du fichier via BlobManager...');
-                    const uploadResult = await BlobManager.createBlob(file, {
-                      etudiantId: etudiant._id,
-                      travailId: travail._id,
-                      type: 'resolution'
-                    });
-                    
-                    console.log('Upload réussi:', uploadResult);
-                    
-                    // 2. Soumission de la résolution avec l'URL reçue
-                    const submitResult = await EtudiantService.submitResolution({
-                      etudiantId: etudiant._id,
-                      travailId: travail._id,
-                      url: uploadResult.url
-                    });
-                    
-                    if (submitResult.success) {
-                      alert('Résolution soumise avec succès !');
-                      // Optionnel: ouvrir l'URL de la résolution
-                      window.open(uploadResult.url, '_blank');
-                    } else {
-                      throw new Error(submitResult.message || 'Erreur lors de la soumission');
-                    }
-                  } catch (error) {
-                    console.error('Erreur lors de l\'upload ou de la soumission:', error);
-                    alert('Erreur lors de l\'envoi du fichier. Veuillez réessayer.');
-                  }
-                }
-              });
-              
-              fileInput.click();
-            }
-          } else {
-            // Si l'étudiant n'a pas commandé le produit, rediriger vers la page produit
-            window.open(`/produits/${travail.produitId}`, '_blank');
-          }
-        },
-        onError: (error) => {
-          console.error("Erreur lors de la vérification du travail:", error);
-          // En cas d'erreur, rediriger vers la page produit par défaut
-          window.open(`/produits/${travail.produitId}`, '_blank');
-        },
-        redirections: {
-          error: `/produits/${travail.produitId}`
+        console.log("Current status : ", status);
+        if (status == "0") {
+          setCommandeStep(3);
+        } else {
+          setCommandeStep(back_step);
         }
-      });
-      
-    } catch (error) {
-      console.error("Error checking resolution : ", error);
-      alert('Erreur lors de la vérification de la résolution.');
+      } else {
+        setError("Erreur lors de la vérification du paiement");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Erreur de connexion. Veuillez réessayer.");
     }
   }
 
@@ -483,9 +462,53 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
                               {/* Bouton de chargement de resolution */}
                               <button 
                                 className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-blacksection dark:border-strokedark dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={() => checkCommanded(travail)}
+                                disabled={checkingResolution === travail._id}
+                                onClick={async () => {
+                                  setCheckingResolution(travail._id);
+                                  try {
+                                    const etudiantData = localStorage.getItem('studentFullData');
+                                    const studentFullData = JSON.parse(etudiantData || '{}');
+                                    const { etudiant } = studentFullData;
+
+                                    // Vérifier si l'étudiant a déjà soumis une résolution
+                                    const request = await EtudiantService.checkResoution(etudiant._id, travail._id);
+                                    
+                                    if (request.success) {
+                                      // Afficher le résultat existant
+                                      const { data } = request;
+                                      const travailResult = {
+                                        url: data.url,
+                                        note: data?.note ?? 0,
+                                        status: data.status,
+                                        resolutionId: data._id
+                                      };
+                                      setTravailResultData(travailResult);
+                                      setShowTravailResultModal(true);
+                                    } else {
+                                      // Ouvrir la modal de commande en 3 étapes
+                                      setSelectedTravail(travail);
+                                      setShowCommandeModal(true);
+                                      setCommandeStep(1);
+                                    }
+                                  } catch (error) {
+                                    console.error('Erreur:', error);
+                                    // En cas d'erreur, ouvrir la modal de commande
+                                    setSelectedTravail(travail);
+                                    setShowCommandeModal(true);
+                                    setCommandeStep(1);
+                                  } finally {
+                                    setCheckingResolution(null);
+                                  }
+                                }}
                               >
-                                Résolution du travail
+                                {checkingResolution === travail._id ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                    Vérification...
+                                  </>
+                                ) : (
+                                  'Résolution du travail'
+                                )}
                               </button>
                               {/* {travail.questionnaire && (
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{travail.questionnaire}</p>
@@ -597,6 +620,257 @@ const ECDetail: React.FC<ECDetailProps> = ({ cours, semestre, unite, onBack }) =
           travailData={travailResultData}
           travailTitle={cours.titre}
         />
+      )}
+
+      {/* Modal de commande en 3 étapes */}
+      {showCommandeModal && selectedTravail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-blacksection rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* En-tête avec indicateur d'étapes */}
+            <div className="border-b border-gray-200 dark:border-strokedark p-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Commander le travail
+              </h2>
+              <div className="flex items-center justify-between">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="flex items-center flex-1">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                      commandeStep >= step
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                    }`}>
+                      {commandeStep > step ? (
+                        <CheckCircle className="w-6 h-6" />
+                      ) : (
+                        <span className="font-semibold">{step}</span>
+                      )}
+                    </div>
+                    {step < 3 && (
+                      <div className={`flex-1 h-1 mx-2 ${
+                        commandeStep > step
+                          ? 'bg-primary'
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
+                <span>Paiement</span>
+                <span>Vérification</span>
+                <span>Résolution</span>
+              </div>
+            </div>
+
+            {/* Contenu des étapes */}
+            <div className="p-6">
+              {/* Étape 1: Paiement */}
+              {commandeStep === 1 && (
+                <div className="space-y-6">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-2">
+                      Étape 1: Effectuer le paiement
+                    </h3>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      {error}
+                    </p>
+                  </div>
+                  <ResolutionPayment 
+                    produit={selectedTravail.produitId} 
+                    onSuccess={makingCommande}
+                  />
+                  <div className="flex justify-between pt-4">
+                    <button
+                      onClick={() => {
+                        setShowCommandeModal(false);
+                        setCommandeStep(1);
+                        setSelectedTravail(null);
+                      }}
+                      className="px-4 py-2 border border-gray-300 dark:border-strokedark rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={() => checkTransaction()}
+                      className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center"
+                    >
+                      Vérifier le paiement
+                      <ExternalLink className="w-4 h-4 ml-2" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Étape 2: Vérification du paiement */}
+              {commandeStep === 2 && (
+                <div className="space-y-6">
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-green-900 dark:text-green-200 mb-2">
+                      Étape 2: Vérifier votre paiement
+                    </h3>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      Cliquez sur le bouton ci-dessous pour vérifier que votre paiement a été confirmé.
+                    </p>
+                  </div>
+                  {checkingResolutionPayment && <ResolutionChecking 
+                    status={checkingResolutionPayment.status}
+                    amount={checkingResolutionPayment.amount}
+                    amountCustomer={checkingResolutionPayment.amountCustomer}
+                    currency={checkingResolutionPayment.currency}
+                    createdAt={checkingResolutionPayment.createdAt}
+                    onClick={() => checkTransaction(1)}
+                  />}
+                  <div className="flex justify-between pt-4">
+                    <button
+                      onClick={() => setCommandeStep(1)}
+                      className="px-4 py-2 border border-gray-300 dark:border-strokedark rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      disabled={isCheckingPayment}
+                    >
+                      Retour
+                    </button>
+                    <button
+                      onClick={async () => {
+                        setIsCheckingPayment(true);
+                        try {
+                          if(commande) {
+                            await checkTransaction(2);
+                          } else {
+                            setError("Paiement non confirmé. Veuillez réessayer ou contacter le support.");
+                          }
+                        } catch (error) {
+                          console.error('Erreur:', error);
+                          setError("Erreur lors de la vérification. Veuillez réessayer.");
+                        } finally {
+                          setIsCheckingPayment(false);
+                        }
+                      }}
+                      disabled={isCheckingPayment}
+                      className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isCheckingPayment ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Vérification...
+                        </>
+                      ) : (
+                        <>
+                          Continuer
+                          <CheckCircle className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Étape 3: Soumission de la résolution */}
+              {commandeStep === 3 && (
+                <div className="space-y-6">
+                  <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-2">
+                      Étape 3: Soumettre votre résolution
+                    </h3>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      Téléchargez votre fichier de résolution pour compléter le travail.
+                    </p>
+                  </div>
+
+                  <ResolutonSubmit
+                    uploadedFile={uploadedFile}
+                    setUploadedFile={setUploadedFile}
+                    uploadedFileUrl={uploadedFileUrl}
+                    setUploadedFileUrl={setUploadedFileUrl}
+                    isSubmittingResolution={isSubmittingResolution}
+                    uploadProgress={uploadProgress}
+                    setUploadProgress={setUploadProgress}
+                  />
+
+                  <div className="flex justify-between pt-4">
+                    <button
+                      onClick={() => setCommandeStep(2)}
+                      className="px-4 py-2 border border-gray-300 dark:border-strokedark rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      disabled={isSubmittingResolution}
+                    >
+                      Retour
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!uploadedFile) {
+                          alert('Veuillez sélectionner un fichier');
+                          return;
+                        }
+
+                        setIsSubmittingResolution(true);
+                        setUploadProgress(0);
+
+                        try {
+                          const etudiantData = localStorage.getItem('studentFullData');
+                          const studentFullData = JSON.parse(etudiantData || '{}');
+                          const { etudiant } = studentFullData;
+
+                          // Upload du fichier
+                          const uploadResult = await BlobManager.createBlob(
+                            uploadedFile,
+                            {
+                              etudiantId: etudiant._id,
+                              travailId: selectedTravail._id,
+                              type: 'resolution'
+                            },
+                            (progress) => {
+                              setUploadProgress(progress.percentage);
+                            }
+                          );
+
+                          // Soumission de la résolution
+                          const submitResult = await EtudiantService.submitResolution({
+                            etudiantId: etudiant._id,
+                            travailId: selectedTravail._id,
+                            url: uploadResult.url
+                          });
+
+                          if (submitResult.success) {
+                            alert('Résolution soumise avec succès !');
+                            setShowCommandeModal(false);
+                            setCommandeStep(1);
+                            setSelectedTravail(null);
+                            setUploadedFile(null);
+                            setUploadedFileUrl('');
+                            
+                            // Ouvrir le questionnaire si disponible
+                            if (selectedTravail.questionnaire) {
+                              window.open(selectedTravail.questionnaire, '_blank');
+                            }
+                          } else {
+                            throw new Error(submitResult.message || 'Erreur lors de la soumission');
+                          }
+                        } catch (error) {
+                          console.error('Erreur:', error);
+                          alert('Erreur lors de la soumission. Veuillez réessayer.');
+                        } finally {
+                          setIsSubmittingResolution(false);
+                        }
+                      }}
+                      disabled={!uploadedFile || isSubmittingResolution}
+                      className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingResolution ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Envoi en cours...
+                        </>
+                      ) : (
+                        <>
+                          Soumettre la résolution
+                          <CheckCircle className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

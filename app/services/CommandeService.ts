@@ -167,6 +167,35 @@ class CommandeService {
     };
   }
 
+  async createPaymentResolution(id: string, {
+    matricule,
+    nom,
+    email,
+    telephone
+  } : {
+    matricule: string;
+    nom: string;
+    email: string;
+    telephone: string;
+  }) : Promise<{success: boolean, message: string, data: Commande}> {
+    const url = `${this.baseUrl}/payment/resolution/${encodeURIComponent(id)}`;
+    const response = await this.makeRequest(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        matricule,
+        nom,
+        email,
+        telephone,
+      }),
+    });
+    const { data } = response;
+    return {
+      success: data.success,
+      message: data.message,
+      data: data.data
+    };
+  }
+
   /**
    * Récupérer toutes les commandes
    */

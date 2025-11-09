@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import config from '@/app/services/config';
 
-const API_URL = config.base_url;
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB par chunk
-const LARGE_FILE_THRESHOLD = 5 * 1024 * 1024; // Utiliser chunks pour fichiers > 5MB
+const API_URL = 'https://server-gr.he-section.site/api/v1' //config.base_url;
+const CHUNK_SIZE = 1 * 1024 * 1024; // 1MB par chunk (pour éviter 413 nginx)
+const LARGE_FILE_THRESHOLD = 1 * 1024 * 1024; // Utiliser chunks pour fichiers > 1MB
 
 export async function POST(request: NextRequest) {
   try {
